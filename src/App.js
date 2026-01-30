@@ -388,33 +388,62 @@ export default function App() {
 
 const exportToPNG = async () => {
   try {
-    const element = document.getElementById('export-area');
+    const element = document.getElementById('roadmap-container');  // or use the maxWidth div if you added id
 
-    // Temporarily hide the header ("BIG ROCKS") and Share/Export buttons
-    const header = document.querySelector('h1'); // the "BIG ROCKS" title
-    const buttonsContainer = document.querySelector('div[style*="display: flex"][style*="justify-content: space-between"]'); // rough selector for header row
+    // Temporarily hide unwanted parts without layout shift
+    const header = document.querySelector('h1'); // BIG ROCKS
+    const buttonsRow = document.querySelector('div[style*="justify-content: space-between"]'); // header row with Share/Export
+    const doneSection = document.querySelector('div[style*="marginTop: 48px"]'); // rough selector for DONE container
 
-    if (header) header.style.display = 'none';
-    if (buttonsContainer) buttonsContainer.style.display = 'none';
+    const originalHeaderVis = header ? header.style.visibility : '';
+    const originalButtonsVis = buttonsRow ? buttonsRow.style.visibility : '';
+    const originalDoneVis = doneSection ? doneSection.style.visibility : '';
 
-    // Capture with equal padding
+    if (header) {
+      header.style.visibility = 'hidden';
+      header.style.height = '0';
+      header.style.overflow = 'hidden';
+    }
+    if (buttonsRow) {
+      buttonsRow.style.visibility = 'hidden';
+      buttonsRow.style.height = '0';
+      buttonsRow.style.overflow = 'hidden';
+    }
+    if (doneSection) {
+      doneSection.style.visibility = 'hidden';
+      doneSection.style.height = '0';
+      doneSection.style.overflow = 'hidden';
+    }
+
     const canvas = await html2canvas(element, {
       backgroundColor: '#F0F0F0',
       scale: 2,
       logging: false,
       useCORS: true,
-      // Equal padding: +80px each side (total +160px width/height)
-      width: element.scrollWidth + 160,
-      height: element.scrollHeight + 160,
-      windowWidth: element.scrollWidth + 160,
-      windowHeight: element.scrollHeight + 160,
-      x: -80,   // center by shifting left
-      y: -80,   // center by shifting up
+      // Equal padding: add 100px each side (adjust as needed)
+      width: element.scrollWidth + 200,
+      height: element.scrollHeight + 200,
+      windowWidth: element.scrollWidth + 200,
+      windowHeight: element.scrollHeight + 200,
+      // No x/y offset — prevents skew; html2canvas centers content
     });
 
-    // Restore visibility
-    if (header) header.style.display = '';
-    if (buttonsContainer) buttonsContainer.style.display = '';
+    // Restore
+    if (header) {
+      header.style.visibility = originalHeaderVis;
+      header.style.height = '';
+      header.style.overflow = '';
+    }
+    if (buttonsRow) {
+      buttonsRow.style.visibility = originalButtonsVis;
+      buttonsRow.style.height = '';
+      buttonsRow.style.overflow = '';
+    }
+    if (doneSection) {
+      doneSection.style.visibility = originalDoneVis;
+      doneSection.style.height = '';
+      doneSection.style.overflow = '';
+    }
 
     const link = document.createElement('a');
     link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
