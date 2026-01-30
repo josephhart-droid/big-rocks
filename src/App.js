@@ -386,17 +386,34 @@ export default function App() {
     }
   };
 
- const exportToPNG = async () => {
+const exportToPNG = async () => {
   try {
-    const element = document.getElementById('roadmap-container');
-    
+    const element = document.getElementById('export-area');
+
+    // Temporarily hide Share + Export buttons during capture
+    const buttonsContainer = document.querySelector('.share-export-buttons');
+    if (buttonsContainer) {
+      buttonsContainer.style.display = 'none';
+    }
+
     const canvas = await html2canvas(element, {
-      backgroundColor: '#F0F0F0',
-      scale: 2,
+      backgroundColor: '#F0F0F0',      // keeps your background color
+      scale: 2,                        // good sharpness
       logging: false,
       useCORS: true,
+      width: element.scrollWidth + 120,   // +60px left + 60px right padding
+      height: element.scrollHeight + 180, // +90px top + 90px bottom padding
+      windowWidth: element.scrollWidth + 120,
+      windowHeight: element.scrollHeight + 180,
+      x: -60,   // shift left to create left padding
+      y: -90,   // shift up to create top padding
     });
-    
+
+    // Restore visibility after capture
+    if (buttonsContainer) {
+      buttonsContainer.style.display = ''; // back to original
+    }
+
     const link = document.createElement('a');
     link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
     link.href = canvas.toDataURL('image/png');
@@ -505,8 +522,8 @@ export default function App() {
         fontFamily: '"Work Sans", sans-serif',
         padding: '48px 24px',
       }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        {/* View-Only Banner */}
+<div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>        
+{/* View-Only Banner */}
         {isViewOnly && (
           <div style={{
             backgroundColor: '#F39C12',
