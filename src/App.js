@@ -388,30 +388,54 @@ export default function App() {
 
 const exportToPNG = async () => {
   try {
-    const element = document.getElementById('export-area');
+    // Target the columns grid (NOW/NEXT/LATER only)
+    const columnsElement = document.getElementById('export-columns');
 
-    // Hide unwanted parts without layout shift
-    const header = document.querySelector('h1'); // BIG ROCKS
-    const buttonsRow = document.querySelector('div[style*="justify-content: space-between"]'); // Share/Export row
+    // Get the parent to include title + filter (parent of columns is the maxWidth div)
+    const element = columnsElement.parentElement;
 
-    const originalHeaderVis = header ? header.style.visibility : '';
-    const originalButtonsVis = buttonsRow ? buttonsRow.style.visibility : '';
+    // Hide header ("BIG ROCKS") and Share/Export row
+    const header = document.querySelector('h1');
+    const buttonsRow = document.querySelector('div[style*="justify-content: space-between"]');
 
     if (header) header.style.visibility = 'hidden';
     if (buttonsRow) buttonsRow.style.visibility = 'hidden';
+
+    // Hide DONE section (the collapsible part)
+    const doneToggle = document.querySelector('button[style*="display: flex"][style*="align-items: center"]'); // the toggle button
+    const doneContent = document.querySelector('div[style*="maxHeight"][style*="opacity"]'); // the collapsible content
+
+    if (doneToggle) doneToggle.style.visibility = 'hidden';
+    if (doneContent) doneContent.style.visibility = 'hidden';
 
     const canvas = await html2canvas(element, {
       backgroundColor: '#F0F0F0',
       scale: 2,
       logging: false,
       useCORS: true,
-      // Symmetric padding: 100px each side (adjust if needed)
-      width: element.scrollWidth + 200,
-      height: element.scrollHeight + 200,
-      windowWidth: element.scrollWidth + 200,
-      windowHeight: element.scrollHeight + 200,
-      // No x/y offset — fixes skew/centering issues
+      // Padding: 120px each side (adjust if needed)
+      width: element.scrollWidth + 240,
+      height: element.scrollHeight + 240,
+      windowWidth: element.scrollWidth + 240,
+      windowHeight: element.scrollHeight + 240,
+      // No x/y offsets — centers perfectly, no skew
     });
+
+    // Restore visibility
+    if (header) header.style.visibility = '';
+    if (buttonsRow) buttonsRow.style.visibility = '';
+    if (doneToggle) doneToggle.style.visibility = '';
+    if (doneContent) doneContent.style.visibility = '';
+
+    const link = document.createElement('a');
+    link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (error) {
+    console.error('Export failed:', error);
+    alert('Export failed. Please try again or use your browser\'s screenshot feature.');
+  }
+};
 
     // Restore
     if (header) header.style.visibility = originalHeaderVis;
@@ -844,11 +868,11 @@ const exportToPNG = async () => {
         </div>
 
         {/* Roadmap Container */}
-        <div id="roadmap-container" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '32px',
-        }}>
+        <div id="export-columns" style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+  gap: '32px',
+}}>
           {Object.entries(columns).filter(([columnId]) => columnId !== 'done').map(([columnId, column]) => (
             <div 
               key={columnId}
