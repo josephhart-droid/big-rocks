@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 
 // Helper function to determine if text should be white or black based on background color
 const getContrastTextColor = (hexColor) => {
@@ -385,55 +386,17 @@ export default function App() {
     }
   };
 
-const exportToPNG = async () => {
+ const exportToPNG = async () => {
   try {
-    // Import html2canvas from installed package (not dynamic import)
-    const html2canvas = require('html2canvas').default;
+    const element = document.getElementById('roadmap-container');
     
-    // Create a wrapper div with padding that includes product name and roadmap
-    const exportWrapper = document.createElement('div');
-    exportWrapper.style.cssText = `
-      position: fixed;
-      left: -9999px;
-      top: 0;
-      background-color: #F0F0F0;
-      padding: 48px;
-      font-family: "Work Sans", sans-serif;
-    `;
-    
-    // Clone product name
-    const productNameClone = document.createElement('h2');
-    productNameClone.textContent = productName;
-    productNameClone.style.cssText = `
-      font-size: 72px;
-      font-weight: 900;
-      font-family: Inter, sans-serif;
-      margin: 0 0 48px 0;
-      color: #1A1A1A;
-      letter-spacing: -3px;
-      line-height: 1;
-    `;
-    
-    // Clone the roadmap
-    const roadmapClone = document.getElementById('roadmap-container').cloneNode(true);
-    
-    // Append to wrapper
-    exportWrapper.appendChild(productNameClone);
-    exportWrapper.appendChild(roadmapClone);
-    document.body.appendChild(exportWrapper);
-    
-    // Capture with html2canvas
-    const canvas = await html2canvas(exportWrapper, {
+    const canvas = await html2canvas(element, {
       backgroundColor: '#F0F0F0',
       scale: 2,
       logging: false,
       useCORS: true,
     });
     
-    // Cleanup
-    document.body.removeChild(exportWrapper);
-    
-    // Download
     const link = document.createElement('a');
     link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
     link.href = canvas.toDataURL('image/png');
