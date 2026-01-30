@@ -390,29 +390,31 @@ const exportToPNG = async () => {
   try {
     const element = document.getElementById('export-area');
 
-    // Temporarily hide Share + Export buttons during capture
-    const buttonsContainer = document.querySelector('.share-export-buttons');
-    if (buttonsContainer) {
-      buttonsContainer.style.display = 'none';
-    }
+    // Temporarily hide the header ("BIG ROCKS") and Share/Export buttons
+    const header = document.querySelector('h1'); // the "BIG ROCKS" title
+    const buttonsContainer = document.querySelector('div[style*="display: flex"][style*="justify-content: space-between"]'); // rough selector for header row
 
+    if (header) header.style.display = 'none';
+    if (buttonsContainer) buttonsContainer.style.display = 'none';
+
+    // Capture with equal padding
     const canvas = await html2canvas(element, {
-      backgroundColor: '#F0F0F0',      // keeps your background color
-      scale: 2,                        // good sharpness
+      backgroundColor: '#F0F0F0',
+      scale: 2,
       logging: false,
       useCORS: true,
-      width: element.scrollWidth + 120,   // +60px left + 60px right padding
-      height: element.scrollHeight + 180, // +90px top + 90px bottom padding
-      windowWidth: element.scrollWidth + 120,
-      windowHeight: element.scrollHeight + 180,
-      x: -60,   // shift left to create left padding
-      y: -90,   // shift up to create top padding
+      // Equal padding: +80px each side (total +160px width/height)
+      width: element.scrollWidth + 160,
+      height: element.scrollHeight + 160,
+      windowWidth: element.scrollWidth + 160,
+      windowHeight: element.scrollHeight + 160,
+      x: -80,   // center by shifting left
+      y: -80,   // center by shifting up
     });
 
-    // Restore visibility after capture
-    if (buttonsContainer) {
-      buttonsContainer.style.display = ''; // back to original
-    }
+    // Restore visibility
+    if (header) header.style.display = '';
+    if (buttonsContainer) buttonsContainer.style.display = '';
 
     const link = document.createElement('a');
     link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
