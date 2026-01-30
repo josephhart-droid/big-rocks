@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import html2canvas from 'html2canvas';
 
 // Helper function to determine if text should be white or black based on background color
 const getContrastTextColor = (hexColor) => {
