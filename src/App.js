@@ -80,7 +80,7 @@ export default function App() {
   const [doneContainerCelebrating, setDoneContainerCelebrating] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
-  const [isViewOnly, setIsViewOnly] = useState(() => {
+  const [isViewOnly] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedData = urlParams.get('data');
