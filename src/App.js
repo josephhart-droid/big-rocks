@@ -388,6 +388,9 @@ export default function App() {
 
 const exportToPNG = async () => {
   try {
+    // Import html2canvas from installed package (not dynamic import)
+    const html2canvas = require('html2canvas').default;
+    
     // Create a wrapper div with padding that includes product name and roadmap
     const exportWrapper = document.createElement('div');
     exportWrapper.style.cssText = `
@@ -403,13 +406,13 @@ const exportToPNG = async () => {
     const productNameClone = document.createElement('h2');
     productNameClone.textContent = productName;
     productNameClone.style.cssText = `
-      fontSize: 72px;
-      fontWeight: 900;
-      fontFamily: Inter, sans-serif;
+      font-size: 72px;
+      font-weight: 900;
+      font-family: Inter, sans-serif;
       margin: 0 0 48px 0;
       color: #1A1A1A;
-      letterSpacing: -3px;
-      lineHeight: 1;
+      letter-spacing: -3px;
+      line-height: 1;
     `;
     
     // Clone the roadmap
@@ -421,8 +424,6 @@ const exportToPNG = async () => {
     document.body.appendChild(exportWrapper);
     
     // Capture with html2canvas
-    const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-    
     const canvas = await html2canvas(exportWrapper, {
       backgroundColor: '#F0F0F0',
       scale: 2,
