@@ -440,6 +440,10 @@ export default function App() {
     try {
       const element = document.getElementById('export-container');
 
+      // Hide scrollbar temporarily
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
       const canvas = await html2canvas(element, {
         backgroundColor: '#F0F0F0',
         scale: 2,
@@ -458,6 +462,20 @@ export default function App() {
     } catch (error) {
       console.error('Export failed:', error);
       alert('Export failed. Please try again or use your browser\'s screenshot feature.');
+
+          // Restore scrollbar
+    document.body.style.overflow = originalOverflow;
+
+    const link = document.createElement('a');
+    link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+  } catch (error) {
+    // Restore scrollbar even if error
+    document.body.style.overflow = '';
+    console.error('Export failed:', error);
+    alert('Export failed. Please try again.');
     }
   };
 
