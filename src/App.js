@@ -452,11 +452,6 @@ export default function App() {
         windowHeight: element.scrollHeight, // ✅ Changed - no +200
       });
 
-      const link = document.createElement('a');
-      link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
  // Crop 20px off the right to remove scrollbar
     const croppedCanvas = document.createElement('canvas');
     const ctx = croppedCanvas.getContext('2d');
