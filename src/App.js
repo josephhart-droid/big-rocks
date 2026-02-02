@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 
-// ============================================================================
 // CONSTANTS
-// ============================================================================
-
 const THEME_TAGS = [
   { name: 'Tech Debt', color: '#C97D60' },
   { name: 'Research', color: '#2C3E50' },
@@ -22,20 +19,11 @@ const ROCK_SIZES = {
   LARGE: 'large',
 };
 
-// ============================================================================
-// MAIN APP
-// ============================================================================
-
 export default function App() {
-  // --------------------------------------------------------------------------
-  // STATE - Data
-  // --------------------------------------------------------------------------
-  
   const [columns, setColumns] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedData = urlParams.get('data');
-      
       if (sharedData) {
         try {
           const decoded = JSON.parse(atob(sharedData));
@@ -47,7 +35,6 @@ export default function App() {
           console.error('Failed to load shared data');
         }
       }
-      
       const saved = localStorage.getItem('bigRocksData');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -57,7 +44,6 @@ export default function App() {
         return parsed;
       }
     }
-    
     return {
       now: { title: 'NOW', rocks: [] },
       next: { title: 'NEXT', rocks: [] },
@@ -70,14 +56,12 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedData = urlParams.get('data');
-      
       if (sharedData) {
         try {
           const decoded = JSON.parse(atob(sharedData));
           return decoded.productName || 'Product Roadmap';
         } catch (e) {}
       }
-      
       const saved = localStorage.getItem('bigRocksProductName');
       return saved || 'Product Roadmap';
     }
@@ -88,24 +72,18 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedData = urlParams.get('data');
-      
       if (sharedData) {
         try {
           const decoded = JSON.parse(atob(sharedData));
           return decoded.customTags || [];
         } catch (e) {}
       }
-      
       const saved = localStorage.getItem('bigRocksCustomTags');
       return saved ? JSON.parse(saved) : [];
     }
     return [];
   });
 
-  // --------------------------------------------------------------------------
-  // STATE - UI
-  // --------------------------------------------------------------------------
-  
   const [editingRock, setEditingRock] = useState(null);
   const [editingProductName, setEditingProductName] = useState(false);
   const [editingColumnTitle, setEditingColumnTitle] = useState(null);
@@ -116,7 +94,7 @@ export default function App() {
   const [doneContainerCelebrating, setDoneContainerCelebrating] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
-  
+
   const [isViewOnly] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -131,10 +109,6 @@ export default function App() {
     return false;
   });
 
-  // --------------------------------------------------------------------------
-  // EFFECTS - Persistence
-  // --------------------------------------------------------------------------
-  
   useEffect(() => {
     if (!isViewOnly && typeof window !== 'undefined') {
       localStorage.setItem('bigRocksData', JSON.stringify(columns));
@@ -152,10 +126,6 @@ export default function App() {
       localStorage.setItem('bigRocksCustomTags', JSON.stringify(customTags));
     }
   }, [customTags, isViewOnly]);
-
-  // --------------------------------------------------------------------------
-  // EFFECTS - UI Interactions
-  // --------------------------------------------------------------------------
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -189,18 +159,10 @@ export default function App() {
     };
   }, [draggedRock]);
 
-  // --------------------------------------------------------------------------
-  // HANDLERS - Tags
-  // --------------------------------------------------------------------------
-  
   const addCustomTag = (tagName, color) => {
     setCustomTags(prev => [...prev, { name: tagName, color }]);
   };
 
-  // --------------------------------------------------------------------------
-  // HANDLERS - Sharing
-  // --------------------------------------------------------------------------
-  
   const generateShareLink = (editable) => {
     const data = { columns, productName, customTags, editable };
     const encoded = btoa(JSON.stringify(data));
@@ -213,10 +175,6 @@ export default function App() {
     alert(editable ? 'Editable link copied!' : 'View-only link copied!');
   };
 
-  // --------------------------------------------------------------------------
-  // HANDLERS - Rocks
-  // --------------------------------------------------------------------------
-  
   const addRock = (columnId) => {
     if (isViewOnly) return;
     
@@ -328,10 +286,6 @@ export default function App() {
     }, 600);
   };
 
-  // --------------------------------------------------------------------------
-  // HANDLERS - Drag & Drop
-  // --------------------------------------------------------------------------
-  
   const handleDragStart = (rock, columnId, index) => {
     setDraggedRock({ rock, columnId, index });
   };
@@ -442,10 +396,6 @@ export default function App() {
     cleanupDragState();
   };
 
-  // --------------------------------------------------------------------------
-  // HANDLERS - Export
-  // --------------------------------------------------------------------------
-  
   const exportToPNG = async () => {
     try {
       const element = document.getElementById('export-area');
@@ -471,10 +421,6 @@ export default function App() {
     }
   };
 
-  // --------------------------------------------------------------------------
-  // RENDER
-  // --------------------------------------------------------------------------
-  
   const allTags = [...THEME_TAGS, ...customTags];
 
   return (
@@ -553,7 +499,7 @@ export default function App() {
             </div>
           )}
 
-          {/* Header - Title & Actions */}
+          {/* Header */}
           <div style={{
             marginBottom: '16px',
             display: 'flex',
@@ -987,7 +933,6 @@ export default function App() {
           {/* DONE Section */}
           {columns.done && (
             <div style={{ marginTop: '48px' }}>
-              {/* Divider and Toggle */}
               <div 
                 style={{
                   borderTop: '2px solid #1A1A1A',
@@ -1125,7 +1070,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Inline Rock component */}
+      {/* Rock component */}
       function Rock({
         rock,
         index,
@@ -1140,7 +1085,8 @@ export default function App() {
         onDragOver,
         onDrop
       }) {
-  const [isDragging, setIsDragging] = useState(false);
+        const [isDragging, setIsDragging] = useState(false);
+
         const sizeStyles = {
           small: { minHeight: '80px' },
           medium: { minHeight: '180px' },
@@ -1300,7 +1246,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Title */}
             <h3 style={{
               fontSize: '18px',
               fontWeight: '900',
@@ -1312,7 +1257,6 @@ export default function App() {
               {rock.title}
             </h3>
 
-            {/* Description */}
             {displaySize !== ROCK_SIZES.SMALL && rock.description && (
               <p style={{
                 fontSize: '13px',
@@ -1325,7 +1269,6 @@ export default function App() {
               </p>
             )}
 
-            {/* Date */}
             {rock.date && (
               <div style={{
                 fontSize: '11px',
@@ -1339,7 +1282,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Completion Date */}
             {isDone && rock.completedDate && (
               <div style={{
                 fontSize: '11px',
@@ -1353,7 +1295,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Tags */}
             {rock.tags && rock.tags.length > 0 && (
               <div style={{
                 display: 'flex',
@@ -1390,7 +1331,7 @@ export default function App() {
         );
       }
 
-      {/* Inline RockEditModal component */}
+      {/* RockEditModal component */}
       function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
         const [formData, setFormData] = useState({
           title: rock.title,
@@ -1487,7 +1428,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Title Input */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   display: 'block',
@@ -1515,7 +1455,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Description Textarea */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   display: 'block',
@@ -1544,7 +1483,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Date Input */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   display: 'block',
@@ -1573,7 +1511,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Tags Selection */}
               <div style={{ marginBottom: '24px' }}>
                 <label style={{
                   display: 'block',
@@ -1684,7 +1621,6 @@ export default function App() {
                   })}
                 </div>
 
-                {/* Add Custom Tag */}
                 <div style={{ marginTop: '16px' }}>
                   <div style={{
                     fontSize: '12px',
@@ -1748,7 +1684,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div style={{
                 display: 'flex',
                 gap: '12px',
