@@ -436,34 +436,30 @@ export default function App() {
     cleanupDragState();
   };
 
-  const exportToPNG = async () => {
-    try {
-      const element = document.getElementById('export-container');
+const exportToPNG = async () => {
+  const originalOverflow = document.body.style.overflow;
+  
+  try {
+    const element = document.getElementById('export-container');
+    if (!element) {
+      throw new Error('Export container not found');
+    }
 
-      // Hide scrollbar temporarily
-    const originalOverflow = document.body.style.overflow;
+    // Hide scrollbar temporarily
     document.body.style.overflow = 'hidden';
 
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#F0F0F0',
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        width: element.offsetWidth,        // ✅ Changed - no +200
-        height: element.offsetHeight,      // ✅ Changed - no +200
-        windowWidth: element.scrollWidth,  // ✅ Changed - no +200
-        windowHeight: element.scrollHeight, // ✅ Changed - no +200
-      });
+    const canvas = await html2canvas(element, {
+      backgroundColor: '#F0F0F0',
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+    });
 
-      const link = document.createElement('a');
-      link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again or use your browser\'s screenshot feature.');
-
-          // Restore scrollbar
+    // Restore scrollbar
     document.body.style.overflow = originalOverflow;
 
     const link = document.createElement('a');
@@ -473,12 +469,11 @@ export default function App() {
     
   } catch (error) {
     // Restore scrollbar even if error
-    document.body.style.overflow = '';
+    document.body.style.overflow = originalOverflow;
     console.error('Export failed:', error);
     alert('Export failed. Please try again.');
-    }
-  };
-
+  }
+};
   const allTags = [...THEME_TAGS, ...customTags];
 
   return (
