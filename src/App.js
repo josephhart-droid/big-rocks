@@ -531,309 +531,249 @@ export default function App() {
       </style>
 
       <div style={{
-        minHeight: '100vh',
+        height: '100vh',
+        width: '100vw',
+        margin: 0,
+        padding: 0,
         backgroundColor: '#F0F0F0',
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E")`,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E")`,
         fontFamily: '"Work Sans", sans-serif',
-        padding: '48px 24px',
+        overflowX: 'hidden',
       }}>
-        <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          {/* View-Only Banner */}
-          {isViewOnly && (
-            <div style={{
-              backgroundColor: '#F39C12',
-              color: '#1A1A1A',
-              padding: '12px 24px',
-              marginBottom: '24px',
-              fontSize: '14px',
-              fontWeight: '700',
-              textAlign: 'center',
-            }}>
-              👁️ View-Only Mode - You're viewing a shared roadmap
-            </div>
-          )}
-
-          {/* Header */}
-          <div style={{
-            marginBottom: '16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '24px',
-          }}>
-            <h1 style={{
-              fontSize: '12px',
-              fontWeight: '700',
-              margin: 0,
-              padding: '12px 0',
-              color: '#1A1A1A',
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-            }}>
-              BIG ROCKS
-            </h1>
-
-            {!isViewOnly && (
-              <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowShareMenu(prev => !prev);
-                  }}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: '#1A1A1A',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontFamily: '"Work Sans", sans-serif',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Share
-                </button>
-
-                {showShareMenu && (
-                  <div
-                    ref={shareMenuRef}
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '8px',
-                      backgroundColor: 'white',
-                      border: '2px solid #1A1A1A',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      zIndex: 1000,
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      minWidth: '220px',
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        copyShareLink(false);
-                        setShowShareMenu(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontFamily: '"Work Sans", sans-serif',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                      }}
-                      onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
-                      onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                    >
-                      📋 View Only
-                    </button>
-
-                    <button
-                      disabled
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: '#f9f9f9',
-                        border: 'none',
-                        textAlign: 'left',
-                        cursor: 'not-allowed',
-                        fontSize: '14px',
-                        fontFamily: '"Work Sans", sans-serif',
-                        color: '#999',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        opacity: 0.7,
-                      }}
-                    >
-                      ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
-                    </button>
-                  </div>
-                )}
-
-                <button
-                  onClick={exportToPNG}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: '#1A1A1A',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontFamily: '"Work Sans", sans-serif',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Export PNG
-                </button>
+        {/* Inner content with padding */}
+        <div style={{
+          minHeight: '100%',
+          padding: '48px 24px',
+          boxSizing: 'border-box',
+        }}>
+          <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            {/* View-Only Banner */}
+            {isViewOnly && (
+              <div style={{
+                backgroundColor: '#F39C12',
+                color: '#1A1A1A',
+                padding: '12px 24px',
+                marginBottom: '24px',
+                fontSize: '14px',
+                fontWeight: '700',
+                textAlign: 'center',
+              }}>
+                👁️ View-Only Mode - You're viewing a shared roadmap
               </div>
             )}
-          </div>
 
-          {/* Black Separator Line */}
-          <div style={{
-            borderTop: '2px solid #1A1A1A',
-            marginBottom: '48px',
-          }} />
+            {/* Header */}
+            <div style={{
+              marginBottom: '16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '24px',
+            }}>
+              <h1 style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                margin: 0,
+                padding: '12px 0',
+                color: '#1A1A1A',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+              }}>
+                BIG ROCKS
+              </h1>
 
-          {/* Export Container */}
-          <div id="export-container" style={{ paddingBottom: '48px' }}>
-            {/* Product Name */}
-            <div style={{ marginBottom: '48px' }}>
-              {editingProductName ? (
-                <input
-                  type="text"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  onBlur={() => setEditingProductName(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') setEditingProductName(false);
-                  }}
-                  autoFocus
-                  style={{
-                    fontSize: '72px',
-                    fontWeight: '900',
-                    fontFamily: 'Inter, sans-serif',
-                    border: '2px solid #1A1A1A',
-                    backgroundColor: 'white',
-                    padding: '8px 12px',
-                    width: '100%',
-                    lineHeight: '1',
-                    letterSpacing: '-3px',
-                  }}
-                />
-              ) : (
-                <h2
-                  onClick={() => !isViewOnly && setEditingProductName(true)}
-                  style={{
-                    fontSize: '72px',
-                    fontWeight: '900',
-                    fontFamily: 'Inter, sans-serif',
-                    margin: 0,
-                    color: '#1A1A1A',
-                    cursor: isViewOnly ? 'default' : 'pointer',
-                    display: 'inline-block',
-                    padding: '8px 0',
-                    transition: 'opacity 0.2s',
-                    lineHeight: '1',
-                    letterSpacing: '-3px',
-                  }}
-                  onMouseEnter={(e) => !isViewOnly && (e.target.style.opacity = '0.7')}
-                  onMouseLeave={(e) => (e.target.style.opacity = '1')}
-                >
-                  {productName}
-                </h2>
+              {!isViewOnly && (
+                <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowShareMenu(prev => !prev);
+                    }}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#1A1A1A',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      fontFamily: '"Work Sans", sans-serif',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-1px)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    Share
+                  </button>
+
+                  {showShareMenu && (
+                    <div
+                      ref={shareMenuRef}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: '8px',
+                        backgroundColor: 'white',
+                        border: '2px solid #1A1A1A',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        zIndex: 1000,
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        minWidth: '220px',
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          copyShareLink(false);
+                          setShowShareMenu(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          background: 'transparent',
+                          border: 'none',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontFamily: '"Work Sans", sans-serif',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                        onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
+                        onMouseLeave={(e) => (e.target.style.background = 'transparent')}
+                      >
+                        📋 View Only
+                      </button>
+
+                      <button
+                        disabled
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          background: '#f9f9f9',
+                          border: 'none',
+                          textAlign: 'left',
+                          cursor: 'not-allowed',
+                          fontSize: '14px',
+                          fontFamily: '"Work Sans", sans-serif',
+                          color: '#999',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          opacity: 0.7,
+                        }}
+                      >
+                        ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={exportToPNG}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#1A1A1A',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      fontFamily: '"Work Sans", sans-serif',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-1px)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    Export PNG
+                  </button>
+                </div>
               )}
             </div>
 
-            {/* Filter UI */}
+            {/* Black Separator Line */}
             <div style={{
-              marginBottom: '32px',
-              paddingBottom: activeFilter || showFilter ? '24px' : '0',
-              borderBottom: activeFilter || showFilter ? '1px solid #D0D0D0' : 'none',
-              transition: 'all 0.3s ease',
-            }}>
-              {!showFilter && !activeFilter ? (
-                <button
-                  onClick={() => setShowFilter(true)}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: 'transparent',
-                    border: '2px solid #1A1A1A',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    fontFamily: '"Work Sans", sans-serif',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#F0F0F0'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  + Filter by Tag
-                </button>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: '#666' }}>
-                    Filter by Tag
-                  </div>
+              borderTop: '2px solid #1A1A1A',
+              marginBottom: '48px',
+            }} />
 
-                  <div style={{ position: 'relative', display: 'inline-block' }}>
-                    {activeFilter && (
-                      <div style={{
-                        position: 'absolute',
-                        left: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '8px',
-                        height: '8px',
-                        backgroundColor: allTags.find(t => t.name === activeFilter)?.color || '#1A1A1A',
-                        pointerEvents: 'none',
-                        zIndex: 1,
-                      }} />
-                    )}
-                    <select
-                      value={activeFilter || ''}
-                      onChange={(e) => setActiveFilter(e.target.value || null)}
-                      style={{
-                        padding: '8px 12px',
-                        paddingLeft: activeFilter ? '24px' : '12px',
-                        backgroundColor: 'white',
-                        border: '2px solid #1A1A1A',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        fontFamily: '"Work Sans", sans-serif',
-                        cursor: 'pointer',
-                        minWidth: '200px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        transition: 'padding 0.2s ease',
-                      }}
-                    >
-                      <option value="">All Tags</option>
-                      {allTags.map(tag => (
-                        <option key={tag.name} value={tag.name}>
-                          {tag.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setActiveFilter(null);
-                      setShowFilter(false);
+            {/* Export Container */}
+            <div id="export-container" style={{ paddingBottom: '48px' }}>
+              {/* Product Name */}
+              <div style={{ marginBottom: '48px' }}>
+                {editingProductName ? (
+                  <input
+                    type="text"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                    onBlur={() => setEditingProductName(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') setEditingProductName(false);
                     }}
+                    autoFocus
+                    style={{
+                      fontSize: '72px',
+                      fontWeight: '900',
+                      fontFamily: 'Inter, sans-serif',
+                      border: '2px solid #1A1A1A',
+                      backgroundColor: 'white',
+                      padding: '8px 12px',
+                      width: '100%',
+                      lineHeight: '1',
+                      letterSpacing: '-3px',
+                    }}
+                  />
+                ) : (
+                  <h2
+                    onClick={() => !isViewOnly && setEditingProductName(true)}
+                    style={{
+                      fontSize: '72px',
+                      fontWeight: '900',
+                      fontFamily: 'Inter, sans-serif',
+                      margin: 0,
+                      color: '#1A1A1A',
+                      cursor: isViewOnly ? 'default' : 'pointer',
+                      display: 'inline-block',
+                      padding: '8px 0',
+                      transition: 'opacity 0.2s',
+                      lineHeight: '1',
+                      letterSpacing: '-3px',
+                    }}
+                    onMouseEnter={(e) => !isViewOnly && (e.target.style.opacity = '0.7')}
+                    onMouseLeave={(e) => (e.target.style.opacity = '1')}
+                  >
+                    {productName}
+                  </h2>
+                )}
+              </div>
+
+              {/* Filter UI */}
+              <div style={{
+                marginBottom: '32px',
+                paddingBottom: activeFilter || showFilter ? '24px' : '0',
+                borderBottom: activeFilter || showFilter ? '1px solid #D0D0D0' : 'none',
+                transition: 'all 0.3s ease',
+              }}>
+                {!showFilter && !activeFilter ? (
+                  <button
+                    onClick={() => setShowFilter(true)}
                     style={{
                       padding: '8px 12px',
                       backgroundColor: 'transparent',
@@ -849,121 +789,369 @@ export default function App() {
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#F0F0F0'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    {activeFilter ? 'Clear' : '×'}
+                    + Filter by Tag
                   </button>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: '#666' }}>
+                      Filter by Tag
+                    </div>
 
-            {/* Roadmap Columns */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '32px',
-            }}>
-              {Object.entries(columns).filter(([columnId]) => columnId !== 'done').map(([columnId, column]) => (
-                <div
-                  key={columnId}
-                  onDragOver={(e) => handleDragOver(e, columnId, column.rocks.length)}
-                  onDrop={() => handleDrop(columnId, column.rocks.length)}
-                >
-                  <div style={{
-                    marginBottom: '16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                    {editingColumnTitle?.columnId === columnId ? (
-                      <input
-                        type="text"
-                        value={column.title}
-                        onChange={(e) => updateColumnTitle(columnId, e.target.value)}
-                        onBlur={() => setEditingColumnTitle(null)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') setEditingColumnTitle(null);
-                        }}
-                        autoFocus
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      {activeFilter && (
+                        <div style={{
+                          position: 'absolute',
+                          left: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: allTags.find(t => t.name === activeFilter)?.color || '#1A1A1A',
+                          pointerEvents: 'none',
+                          zIndex: 1,
+                        }} />
+                      )}
+                      <select
+                        value={activeFilter || ''}
+                        onChange={(e) => setActiveFilter(e.target.value || null)}
                         style={{
-                          fontSize: '24px',
-                          fontWeight: '900',
-                          fontFamily: '"Work Sans", sans-serif',
-                          border: '2px solid #1A1A1A',
+                          padding: '8px 12px',
+                          paddingLeft: activeFilter ? '24px' : '12px',
                           backgroundColor: 'white',
-                          padding: '4px 8px',
-                          color: '#1A1A1A',
-                          letterSpacing: '-1px',
-                          flex: 1,
-                          minWidth: 0,
+                          border: '2px solid #1A1A1A',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          fontFamily: '"Work Sans", sans-serif',
+                          cursor: 'pointer',
+                          minWidth: '200px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          transition: 'padding 0.2s ease',
                         }}
-                      />
-                    ) : (
-                      <h2
-                        onClick={() => !isViewOnly && setEditingColumnTitle({ columnId })}
-                        style={{
-                          fontSize: '24px',
-                          fontWeight: '900',
-                          margin: 0,
-                          color: '#1A1A1A',
-                          letterSpacing: '-1px',
-                          cursor: isViewOnly ? 'default' : 'pointer',
-                          padding: '4px 0',
-                        }}
-                        onMouseEnter={(e) => !isViewOnly && (e.target.style.opacity = '0.7')}
-                        onMouseLeave={(e) => (e.target.style.opacity = '1')}
                       >
-                        {column.title}
-                      </h2>
-                    )}
+                        <option value="">All Tags</option>
+                        {allTags.map(tag => (
+                          <option key={tag.name} value={tag.name}>
+                            {tag.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
                     <button
-                      onClick={() => addRock(columnId)}
-                      disabled={isViewOnly}
+                      onClick={() => {
+                        setActiveFilter(null);
+                        setShowFilter(false);
+                      }}
                       style={{
-                        width: '32px',
-                        height: '32px',
-                        flexShrink: 0,
-                        backgroundColor: isViewOnly ? '#999' : '#1A1A1A',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        fontSize: '20px',
-                        cursor: isViewOnly ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: isViewOnly ? 0.5 : 1,
+                        padding: '8px 12px',
+                        backgroundColor: 'transparent',
+                        border: '2px solid #1A1A1A',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        fontFamily: '"Work Sans", sans-serif',
                         transition: 'all 0.2s',
                       }}
-                      onMouseEnter={(e) => {
-                        if (!isViewOnly) {
-                          e.target.style.transform = 'scale(1.1)';
-                          e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'scale(1)';
-                        e.target.style.boxShadow = 'none';
-                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#F0F0F0'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
-                      +
+                      {activeFilter ? 'Clear' : '×'}
                     </button>
                   </div>
+                )}
+              </div>
 
-                  <div style={{
-                    minHeight: '500px',
-                    backgroundColor: dragOverInfo && dragOverInfo.columnId === columnId ? '#F5F5F5' : 'transparent',
-                    padding: '0',
-                    transition: draggedRock ? 'none' : 'background-color 0.2s',
-                    position: 'relative',
-                  }}>
-                    {column.rocks
-                      .filter(rock => {
-                        if (!activeFilter) return true;
-                        return rock.tags && rock.tags.includes(activeFilter);
-                      })
-                      .map((rock, index) => (
-                        <React.Fragment key={rock.id}>
-                          {/* Black drop indicator BEFORE this rock */}
-                          {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === index && (
+              {/* Roadmap Columns */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '32px',
+              }}>
+                {Object.entries(columns).filter(([columnId]) => columnId !== 'done').map(([columnId, column]) => (
+                  <div
+                    key={columnId}
+                    onDragOver={(e) => handleDragOver(e, columnId, column.rocks.length)}
+                    onDrop={() => handleDrop(columnId, column.rocks.length)}
+                  >
+                    <div style={{
+                      marginBottom: '16px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}>
+                      {editingColumnTitle?.columnId === columnId ? (
+                        <input
+                          type="text"
+                          value={column.title}
+                          onChange={(e) => updateColumnTitle(columnId, e.target.value)}
+                          onBlur={() => setEditingColumnTitle(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') setEditingColumnTitle(null);
+                          }}
+                          autoFocus
+                          style={{
+                            fontSize: '24px',
+                            fontWeight: '900',
+                            fontFamily: '"Work Sans", sans-serif',
+                            border: '2px solid #1A1A1A',
+                            backgroundColor: 'white',
+                            padding: '4px 8px',
+                            color: '#1A1A1A',
+                            letterSpacing: '-1px',
+                            flex: 1,
+                            minWidth: 0,
+                          }}
+                        />
+                      ) : (
+                        <h2
+                          onClick={() => !isViewOnly && setEditingColumnTitle({ columnId })}
+                          style={{
+                            fontSize: '24px',
+                            fontWeight: '900',
+                            margin: 0,
+                            color: '#1A1A1A',
+                            letterSpacing: '-1px',
+                            cursor: isViewOnly ? 'default' : 'pointer',
+                            padding: '4px 0',
+                          }}
+                          onMouseEnter={(e) => !isViewOnly && (e.target.style.opacity = '0.7')}
+                          onMouseLeave={(e) => (e.target.style.opacity = '1')}
+                        >
+                          {column.title}
+                        </h2>
+                      )}
+
+                      <button
+                        onClick={() => addRock(columnId)}
+                        disabled={isViewOnly}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          flexShrink: 0,
+                          backgroundColor: isViewOnly ? '#999' : '#1A1A1A',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontSize: '20px',
+                          cursor: isViewOnly ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: isViewOnly ? 0.5 : 1,
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isViewOnly) {
+                            e.target.style.transform = 'scale(1.1)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <div style={{
+                      minHeight: '500px',
+                      backgroundColor: dragOverInfo && dragOverInfo.columnId === columnId ? '#F5F5F5' : 'transparent',
+                      padding: '0',
+                      transition: draggedRock ? 'none' : 'background-color 0.2s',
+                      position: 'relative',
+                    }}>
+                      {column.rocks
+                        .filter(rock => {
+                          if (!activeFilter) return true;
+                          return rock.tags && rock.tags.includes(activeFilter);
+                        })
+                        .map((rock, index) => (
+                          <React.Fragment key={rock.id}>
+                            {/* Black drop indicator BEFORE this rock */}
+                            {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === index && (
+                              <div style={{
+                                height: '4px',
+                                backgroundColor: '#1A1A1A',
+                                margin: '12px 20px',
+                                borderRadius: '2px',
+                              }} />
+                            )}
+
+                            <Rock
+                              rock={rock}
+                              index={index}
+                              columnId={columnId}
+                              allTags={allTags}
+                              isViewOnly={isViewOnly}
+                              isDraggingGlobal={!!draggedRock}
+                              onEdit={() => setEditingRock({ ...rock, columnId })}
+                              onDelete={() => deleteRock(columnId, rock.id)}
+                              onUpdateSize={(newSize) => updateRock(columnId, rock.id, { size: newSize })}
+                              onDragStart={() => handleDragStart(rock, columnId, index)}
+                              onDragOver={(e) => {
+                                e.stopPropagation();
+                                handleDragOver(e, columnId, index);
+                              }}
+                              onDrop={(e) => {
+                                e.stopPropagation();
+                                handleDrop(columnId, index);
+                              }}
+                            />
+                          </React.Fragment>
+                        ))}
+
+                      {/* Black drop indicator at BOTTOM */}
+                      {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && (
+                        <div style={{
+                          height: '4px',
+                          backgroundColor: '#1A1A1A',
+                          margin: '12px 20px',
+                          borderRadius: '2px',
+                        }} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div> {/* End export-container */}
+
+            {/* DONE Section */}
+            {columns.done && (
+              <div style={{ marginTop: '48px' }}>
+                <div
+                  style={{
+                    borderTop: '2px solid #1A1A1A',
+                    paddingTop: '24px',
+                    marginBottom: '16px',
+                  }}
+                  onDragOver={(e) => {
+                    if (!showDone) {
+                      e.preventDefault();
+                      handleDragOver(e, 'done', columns.done.rocks.length);
+                    }
+                  }}
+                  onDrop={() => {
+                    if (!showDone) {
+                      handleDrop('done', columns.done.rocks.length);
+                      setShowDone(true);
+                    }
+                  }}
+                >
+                  <button
+                    onClick={() => setShowDone(!showDone)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      backgroundColor: dragOverInfo && dragOverInfo.columnId === 'done' && !showDone ? '#F5F5F5' : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#666',
+                      fontFamily: '"Work Sans", sans-serif',
+                      padding: '8px 12px',
+                      borderRadius: '2px',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#F5F5F5'}
+                    onMouseLeave={(e) => {
+                      if (!(dragOverInfo && dragOverInfo.columnId === 'done' && !showDone)) {
+                        e.target.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    <span style={{
+                      fontSize: '14px',
+                      transition: 'transform 0.2s',
+                      transform: showDone ? 'rotate(90deg)' : 'rotate(0deg)',
+                    }}>
+                      ▶
+                    </span>
+                    DONE ({columns.done.rocks.length})
+                    {!showDone && dragOverInfo && dragOverInfo.columnId === 'done' && (
+                      <span style={{ fontSize: '12px', marginLeft: '8px', color: '#999' }}>
+                        (drop to complete)
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {showDone && (
+                  <div style={{ animation: 'fadeIn 0.3s ease-in' }}>
+                    <div
+                      onDragOver={(e) => handleDragOver(e, 'done', columns.done.rocks.length)}
+                      onDrop={() => handleDrop('done', columns.done.rocks.length)}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                        columnGap: '16px',
+                        rowGap: '0',
+                        padding: '0',
+                        backgroundColor: '#F5F5F5',
+                        minHeight: columns.done.rocks.length === 0 ? '100px' : 'auto',
+                        marginTop: '16px',
+                        animation: doneContainerCelebrating ? 'doneContainerPulse 0.6s ease-in-out' : 'none',
+                      }}
+                    >
+                      {columns.done.rocks.length === 0 ? (
+                        <div style={{
+                          gridColumn: '1 / -1',
+                          padding: '48px',
+                          textAlign: 'center',
+                          color: '#999',
+                          fontSize: '14px',
+                        }}>
+                          Drag completed items here
+                        </div>
+                      ) : (
+                        <>
+                          {columns.done.rocks
+                            .filter(rock => {
+                              if (!activeFilter) return true;
+                              return rock.tags && rock.tags.includes(activeFilter);
+                            })
+                            .map((rock, index) => (
+                              <React.Fragment key={rock.id}>
+                                {/* Black drop indicator BEFORE rock in DONE */}
+                                {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === index && (
+                                  <div style={{
+                                    height: '4px',
+                                    backgroundColor: '#1A1A1A',
+                                    margin: '12px 20px',
+                                    borderRadius: '2px',
+                                  }} />
+                                )}
+
+                                <Rock
+                                  rock={rock}
+                                  index={index}
+                                  columnId="done"
+                                  allTags={allTags}
+                                  isViewOnly={isViewOnly}
+                                  isDraggingGlobal={!!draggedRock}
+                                  onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
+                                  onDelete={() => deleteRock('done', rock.id)}
+                                  onUpdateSize={(newSize) => updateRock('done', rock.id, { size: newSize })}
+                                  onDragStart={() => handleDragStart(rock, 'done', index)}
+                                  onDragOver={(e) => {
+                                    e.stopPropagation();
+                                    handleDragOver(e, 'done', index);
+                                  }}
+                                  onDrop={(e) => {
+                                    e.stopPropagation();
+                                    handleDrop('done', index);
+                                  }}
+                                />
+                              </React.Fragment>
+                            ))}
+
+                          {/* Bottom indicator in DONE */}
+                          {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === columns.done.rocks.length && (
                             <div style={{
                               height: '4px',
                               backgroundColor: '#1A1A1A',
@@ -971,192 +1159,14 @@ export default function App() {
                               borderRadius: '2px',
                             }} />
                           )}
-
-                          <Rock
-                            rock={rock}
-                            index={index}
-                            columnId={columnId}
-                            allTags={allTags}
-                            isViewOnly={isViewOnly}
-                            isDraggingGlobal={!!draggedRock}
-                            onEdit={() => setEditingRock({ ...rock, columnId })}
-                            onDelete={() => deleteRock(columnId, rock.id)}
-                            onUpdateSize={(newSize) => updateRock(columnId, rock.id, { size: newSize })}
-                            onDragStart={() => handleDragStart(rock, columnId, index)}
-                            onDragOver={(e) => {
-                              e.stopPropagation();
-                              handleDragOver(e, columnId, index);
-                            }}
-                            onDrop={(e) => {
-                              e.stopPropagation();
-                              handleDrop(columnId, index);
-                            }}
-                          />
-                        </React.Fragment>
-                      ))}
-
-                    {/* Black drop indicator at BOTTOM */}
-                    {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && (
-                      <div style={{
-                        height: '4px',
-                        backgroundColor: '#1A1A1A',
-                        margin: '12px 20px',
-                        borderRadius: '2px',
-                      }} />
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div> {/* End export-container */}
-
-          {/* DONE Section */}
-          {columns.done && (
-            <div style={{ marginTop: '48px' }}>
-              <div
-                style={{
-                  borderTop: '2px solid #1A1A1A',
-                  paddingTop: '24px',
-                  marginBottom: '16px',
-                }}
-                onDragOver={(e) => {
-                  if (!showDone) {
-                    e.preventDefault();
-                    handleDragOver(e, 'done', columns.done.rocks.length);
-                  }
-                }}
-                onDrop={() => {
-                  if (!showDone) {
-                    handleDrop('done', columns.done.rocks.length);
-                    setShowDone(true);
-                  }
-                }}
-              >
-                <button
-                  onClick={() => setShowDone(!showDone)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    backgroundColor: dragOverInfo && dragOverInfo.columnId === 'done' && !showDone ? '#F5F5F5' : 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#666',
-                    fontFamily: '"Work Sans", sans-serif',
-                    padding: '8px 12px',
-                    borderRadius: '2px',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#F5F5F5'}
-                  onMouseLeave={(e) => {
-                    if (!(dragOverInfo && dragOverInfo.columnId === 'done' && !showDone)) {
-                      e.target.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  <span style={{
-                    fontSize: '14px',
-                    transition: 'transform 0.2s',
-                    transform: showDone ? 'rotate(90deg)' : 'rotate(0deg)',
-                  }}>
-                    ▶
-                  </span>
-                  DONE ({columns.done.rocks.length})
-                  {!showDone && dragOverInfo && dragOverInfo.columnId === 'done' && (
-                    <span style={{ fontSize: '12px', marginLeft: '8px', color: '#999' }}>
-                      (drop to complete)
-                    </span>
-                  )}
-                </button>
+                )}
               </div>
-
-              {showDone && (
-                <div style={{ animation: 'fadeIn 0.3s ease-in' }}>
-                  <div
-                    onDragOver={(e) => handleDragOver(e, 'done', columns.done.rocks.length)}
-                    onDrop={() => handleDrop('done', columns.done.rocks.length)}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                      columnGap: '16px',
-                      rowGap: '0',
-                      padding: '0',
-                      backgroundColor: '#F5F5F5',
-                      minHeight: columns.done.rocks.length === 0 ? '100px' : 'auto',
-                      marginTop: '16px',
-                      animation: doneContainerCelebrating ? 'doneContainerPulse 0.6s ease-in-out' : 'none',
-                    }}
-                  >
-                    {columns.done.rocks.length === 0 ? (
-                      <div style={{
-                        gridColumn: '1 / -1',
-                        padding: '48px',
-                        textAlign: 'center',
-                        color: '#999',
-                        fontSize: '14px',
-                      }}>
-                        Drag completed items here
-                      </div>
-                    ) : (
-                      <>
-                        {columns.done.rocks
-                          .filter(rock => {
-                            if (!activeFilter) return true;
-                            return rock.tags && rock.tags.includes(activeFilter);
-                          })
-                          .map((rock, index) => (
-                            <React.Fragment key={rock.id}>
-                              {/* Black drop indicator BEFORE rock in DONE */}
-                              {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === index && (
-                                <div style={{
-                                  height: '4px',
-                                  backgroundColor: '#1A1A1A',
-                                  margin: '12px 20px',
-                                  borderRadius: '2px',
-                                }} />
-                              )}
-
-                              <Rock
-                                rock={rock}
-                                index={index}
-                                columnId="done"
-                                allTags={allTags}
-                                isViewOnly={isViewOnly}
-                                isDraggingGlobal={!!draggedRock}
-                                onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
-                                onDelete={() => deleteRock('done', rock.id)}
-                                onUpdateSize={(newSize) => updateRock('done', rock.id, { size: newSize })}
-                                onDragStart={() => handleDragStart(rock, 'done', index)}
-                                onDragOver={(e) => {
-                                  e.stopPropagation();
-                                  handleDragOver(e, 'done', index);
-                                }}
-                                onDrop={(e) => {
-                                  e.stopPropagation();
-                                  handleDrop('done', index);
-                                }}
-                              />
-                            </React.Fragment>
-                          ))}
-
-                        {/* Bottom indicator in DONE */}
-                        {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === columns.done.rocks.length && (
-                          <div style={{
-                            height: '4px',
-                            backgroundColor: '#1A1A1A',
-                            margin: '12px 20px',
-                            borderRadius: '2px',
-                          }} />
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* RockEditModal */}
@@ -1170,7 +1180,7 @@ export default function App() {
               setEditingRock(null);
             }}
             onAddCustomTag={addCustomTag}
-            onDeleteCustomTag={deleteCustomTag}  // ← Now real deletion
+            onDeleteCustomTag={deleteCustomTag}
             onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
           />
         )}
@@ -1250,6 +1260,8 @@ function Rock({
               : rock.newlyCreated
                 ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
                 : 'none',
+        cursor: 'grab',
+        userSelect: 'none',
       }}
       onMouseEnter={(e) => {
         if (!isDragging && !isDone && !isDraggingGlobal) {
