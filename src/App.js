@@ -455,7 +455,7 @@ export default function App() {
  // Crop 20px off the right to remove scrollbar
     const croppedCanvas = document.createElement('canvas');
     const ctx = croppedCanvas.getContext('2d');
-    croppedCanvas.width = canvas.width - 90; // 20px * scale(2)
+    croppedCanvas.width = canvas.width - 100; // 20px * scale(2)
     croppedCanvas.height = canvas.height;
     ctx.drawImage(canvas, 0, 0);
 
