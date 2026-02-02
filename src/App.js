@@ -2,16 +2,8 @@ import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 
 // ============================================================================
-// CONSTANTS & HELPERS
+// CONSTANTS
 // ============================================================================
-
-const getContrastTextColor = (hexColor) => {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? '#1A1A1A' : '#FFFFFF';
-};
 
 const THEME_TAGS = [
   { name: 'Tech Debt', color: '#C97D60' },
@@ -995,119 +987,808 @@ export default function App() {
           {/* DONE Section */}
           {columns.done && (
             <div style={{ marginTop: '48px' }}>
-              {/* ... your existing DONE section code ... */}
+              {/* Divider and Toggle */}
+              <div 
+                style={{
+                  borderTop: '2px solid #1A1A1A',
+                  paddingTop: '24px',
+                  marginBottom: '16px',
+                }}
+                onDragOver={(e) => {
+                  if (!showDone) {
+                    e.preventDefault();
+                    handleDragOver(e, 'done', columns.done.rocks.length);
+                  }
+                }}
+                onDrop={() => {
+                  if (!showDone) {
+                    handleDrop('done', columns.done.rocks.length);
+                    setShowDone(true);
+                  }
+                }}
+              >
+                <button
+                  onClick={() => setShowDone(!showDone)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    backgroundColor: dragOverInfo && dragOverInfo.columnId === 'done' && !showDone ? '#F5F5F5' : 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#666',
+                    fontFamily: '"Work Sans", sans-serif',
+                    padding: '8px 12px',
+                    borderRadius: '2px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#F5F5F5';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!(dragOverInfo && dragOverInfo.columnId === 'done' && !showDone)) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <span style={{
+                    fontSize: '14px',
+                    transition: 'transform 0.2s',
+                    transform: showDone ? 'rotate(90deg)' : 'rotate(0deg)',
+                  }}>
+                    ▶
+                  </span>
+                  DONE ({columns.done.rocks.length})
+                  {!showDone && dragOverInfo && dragOverInfo.columnId === 'done' && (
+                    <span style={{ fontSize: '12px', marginLeft: '8px', color: '#999' }}>
+                      (drop to complete)
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {showDone && (
+                <div style={{ animation: 'fadeIn 0.3s ease-in' }}>
+                  <div
+                    onDragOver={(e) => handleDragOver(e, 'done', columns.done.rocks.length)}
+                    onDrop={() => handleDrop('done', columns.done.rocks.length)}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                      columnGap: '16px',
+                      rowGap: '0',
+                      padding: '0',
+                      backgroundColor: '#F5F5F5',
+                      minHeight: columns.done.rocks.length === 0 ? '100px' : 'auto',
+                      marginTop: '16px',
+                      animation: doneContainerCelebrating ? 'doneContainerPulse 0.6s ease-in-out' : 'none',
+                    }}
+                  >
+                    {columns.done.rocks.length === 0 ? (
+                      <div style={{
+                        gridColumn: '1 / -1',
+                        padding: '48px',
+                        textAlign: 'center',
+                        color: '#999',
+                        fontSize: '14px',
+                      }}>
+                        Drag completed items here
+                      </div>
+                    ) : (
+                      <>
+                        {columns.done.rocks
+                          .filter(rock => {
+                            if (!activeFilter) return true;
+                            return rock.tags && rock.tags.includes(activeFilter);
+                          })
+                          .map((rock, index) => (
+                            <Rock
+                              key={rock.id}
+                              rock={rock}
+                              index={index}
+                              columnId="done"
+                              allTags={allTags}
+                              isViewOnly={isViewOnly}
+                              isDraggingGlobal={!!draggedRock}
+                              onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
+                              onDelete={() => deleteRock('done', rock.id)}
+                              onUpdateSize={(newSize) => updateRock('done', rock.id, { size: newSize })}
+                              onDragStart={() => handleDragStart(rock, 'done', index)}
+                              onDragOver={(e) => {
+                                e.stopPropagation();
+                                handleDragOver(e, 'done', index);
+                              }}
+                              onDrop={(e) => {
+                                e.stopPropagation();
+                                handleDrop('done', index);
+                              }}
+                            />
+                          ))}
+
+                        {dragOverInfo && dragOverInfo.columnId === 'done' && 
+                         dragOverInfo.overIndex === columns.done.rocks.length && (
+                          <div style={{
+                            height: '4px',
+                            backgroundColor: '#1A1A1A',
+                            marginTop: columns.done.rocks.length > 0 ? '0' : '16px',
+                          }} />
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
       {/* Inline Rock component */}
-      {editingRock && (
-        <RockEditModal
-          rock={editingRock}
-          allTags={allTags}
-          onClose={() => setEditingRock(null)}
-          onSave={(updates) => {
-            updateRock(editingRock.columnId, editingRock.id, updates);
-            setEditingRock(null);
-          }}
-          onAddCustomTag={addCustomTag}
-          onDeleteCustomTag={() => {}} // stub if not used
-          onDuplicate={(rock) => duplicateRock(editingRock.columnId, editingRock.id)}
-        />
-      )}
+      function Rock({
+        rock,
+        index,
+        columnId,
+        allTags,
+        isViewOnly,
+        isDraggingGlobal,
+        onEdit,
+        onDelete,
+        onUpdateSize,
+        onDragStart,
+        onDragOver,
+        onDrop
+      }) {
+        const [isDragging, setIsDragging] = useState(false);
+
+        const sizeStyles = {
+          small: { minHeight: '80px' },
+          medium: { minHeight: '180px' },
+          large: { minHeight: '280px' },
+        };
+
+        const isDone = columnId === 'done';
+        const displaySize = isDone ? ROCK_SIZES.SMALL : rock.size;
+        const isEditable = !isViewOnly && !isDone;
+
+        return (
+          <div
+            draggable={!isViewOnly}
+            onDragStart={(e) => {
+              if (isViewOnly) {
+                e.preventDefault();
+                return;
+              }
+              setIsDragging(true);
+              e.dataTransfer.effectAllowed = 'move';
+              onDragStart();
+            }}
+            onDragEnd={() => setIsDragging(false)}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            style={{
+              ...sizeStyles[displaySize],
+              backgroundColor: '#FFFFFF',
+              border: '2px solid #1A1A1A',
+              padding: '20px',
+              marginBottom: '16px',
+              boxShadow: isDragging
+                ? '0 8px 24px rgba(0,0,0,0.25)'
+                : '0 2px 8px rgba(0,0,0,0.1)',
+              cursor: 'grab',
+              position: 'relative',
+              transition: isDraggingGlobal ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              opacity: isDragging ? 0.5 : (isDone ? 0.7 : 1),
+              display: 'flex',
+              flexDirection: 'column',
+              transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+              pointerEvents: isDraggingGlobal && !isDragging ? 'none' : 'auto',
+              animation: rock.deleting 
+                ? 'rockDelete 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+                : rock.justCompleted
+                  ? 'rockComplete 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                  : rock.justUncompleted
+                    ? 'rockUncomplete 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                    : rock.newlyCreated
+                      ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                      : 'none',
+            }}
+            onMouseEnter={(e) => {
+              if (!isDragging && !isDone && !isDraggingGlobal) {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isDragging && !isDone && !isDraggingGlobal) {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+              }
+            }}
+          >
+            {/* Action Buttons */}
+            {isEditable && (
+              <div style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                display: 'flex',
+                gap: '4px',
+              }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const sizes = [ROCK_SIZES.SMALL, ROCK_SIZES.MEDIUM, ROCK_SIZES.LARGE];
+                    const currentIndex = sizes.indexOf(rock.size);
+                    const nextSize = sizes[(currentIndex + 1) % sizes.length];
+                    onUpdateSize(nextSize);
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    border: 'none',
+                    borderRadius: '2px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'all 0.2s',
+                  }}
+                  title="Change size"
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                    e.target.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(0,0,0,0.1)';
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  ⇅
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    border: 'none',
+                    borderRadius: '2px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                    e.target.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(0,0,0,0.1)';
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    border: 'none',
+                    borderRadius: '2px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(231,76,60,0.2)';
+                    e.target.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(0,0,0,0.1)';
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {/* Title */}
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '900',
+              margin: '0 0 8px 0',
+              color: '#1A1A1A',
+              wordBreak: 'break-word',
+              paddingRight: '80px',
+            }}>
+              {rock.title}
+            </h3>
+
+            {/* Description */}
+            {displaySize !== ROCK_SIZES.SMALL && rock.description && (
+              <p style={{
+                fontSize: '13px',
+                lineHeight: '1.6',
+                margin: '0 0 auto 0',
+                color: 'rgba(26,26,26,0.85)',
+                fontWeight: '500',
+              }}>
+                {rock.description}
+              </p>
+            )}
+
+            {/* Date */}
+            {rock.date && (
+              <div style={{
+                fontSize: '11px',
+                fontWeight: '700',
+                color: 'rgba(26,26,26,0.6)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginTop: displaySize === ROCK_SIZES.SMALL ? 'auto' : '8px',
+              }}>
+                {rock.date}
+              </div>
+            )}
+
+            {/* Completion Date */}
+            {isDone && rock.completedDate && (
+              <div style={{
+                fontSize: '11px',
+                fontWeight: '700',
+                color: '#1E8449',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginTop: '8px',
+              }}>
+                ✓ {rock.completedDate}
+              </div>
+            )}
+
+            {/* Tags */}
+            {rock.tags && rock.tags.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                marginTop: '12px',
+              }}>
+                {rock.tags.map((tagName) => {
+                  const tag = allTags.find(t => t.name === tagName);
+                  return tag ? (
+                    <span
+                      key={tagName}
+                      style={{
+                        backgroundColor: tag.color,
+                        color: getContrastTextColor(tag.color),
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        padding: '6px 12px',
+                        borderRadius: '2px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        lineHeight: '1',
+                      }}
+                    >
+                      {tag.name}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      {/* Inline RockEditModal component */}
+      function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
+        const [formData, setFormData] = useState({
+          title: rock.title,
+          description: rock.description || '',
+          size: rock.size,
+          date: rock.date || '',
+          tags: rock.tags || [],
+        });
+        const [newTagName, setNewTagName] = useState('');
+        const [newTagColor, setNewTagColor] = useState('#C97D60');
+
+        const handleAddCustomTag = () => {
+          if (newTagName.trim()) {
+            onAddCustomTag(newTagName.trim(), newTagColor);
+            setFormData(prev => ({
+              ...prev,
+              tags: [...prev.tags, newTagName.trim()],
+            }));
+            setNewTagName('');
+          }
+        };
+
+        return (
+          <div
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '24px',
+              animation: 'fadeIn 0.2s ease-out',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: '#F0F0F0',
+                border: '2px solid #1A1A1A',
+                padding: '32px',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                animation: 'slideUp 0.3s ease-out',
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '24px',
+              }}>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: '900',
+                  margin: '0',
+                  color: '#1A1A1A',
+                }}>
+                  Edit Rock
+                </h3>
+                <button
+                  onClick={() => {
+                    onDuplicate(rock);
+                    onClose();
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    fontFamily: '"Work Sans", sans-serif',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#333';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#1A1A1A';
+                  }}
+                >
+                  Duplicate
+                </button>
+              </div>
+
+              {/* Title Input */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '8px',
+                  color: '#1A1A1A',
+                }}>
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '16px',
+                    border: '2px solid #1A1A1A',
+                    fontFamily: '"Work Sans", sans-serif',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Description Textarea */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '8px',
+                  color: '#1A1A1A',
+                }}>
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '14px',
+                    border: '2px solid #1A1A1A',
+                    fontFamily: '"Work Sans", sans-serif',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Date Input */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '8px',
+                  color: '#1A1A1A',
+                }}>
+                  Date (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  placeholder="Q2 2025"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '14px',
+                    border: '2px solid #1A1A1A',
+                    fontFamily: '"Work Sans", sans-serif',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Tags Selection */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  marginBottom: '12px',
+                  color: '#1A1A1A',
+                }}>
+                  Tags (select multiple)
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '8px',
+                  marginBottom: '16px',
+                }}>
+                  {allTags.map(tag => {
+                    const isSelected = formData.tags.includes(tag.name);
+                    const isThemeTag = THEME_TAGS.some(t => t.name === tag.name);
+                    
+                    return (
+                      <button
+                        key={tag.name}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            tags: prev.tags.includes(tag.name)
+                              ? prev.tags.filter(t => t !== tag.name)
+                              : [...prev.tags, tag.name],
+                          }));
+                        }}
+                        style={{
+                          padding: '12px 16px',
+                          backgroundColor: tag.color,
+                          color: getContrastTextColor(tag.color),
+                          border: isSelected ? '3px solid #1A1A1A' : '2px solid transparent',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          transition: 'all 0.2s',
+                          fontFamily: '"Work Sans", sans-serif',
+                          position: 'relative',
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '48px',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.02)';
+                          e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      >
+                        {tag.name}
+                        {!isThemeTag && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteCustomTag(tag.name);
+                              setFormData(prev => ({
+                                ...prev,
+                                tags: prev.tags.filter(t => t !== tag.name)
+                              }));
+                            }}
+                            style={{
+                              position: 'absolute',
+                              right: '8px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              width: '20px',
+                              height: '20px',
+                              backgroundColor: 'rgba(0,0,0,0.3)',
+                              borderRadius: '2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px',
+                              fontWeight: 'bold',
+                              transition: 'all 0.2s',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.stopPropagation();
+                              e.target.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                              e.target.style.transform = 'translateY(-50%) scale(1.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.stopPropagation();
+                              e.target.style.backgroundColor = 'rgba(0,0,0,0.3)';
+                              e.target.style.transform = 'translateY(-50%) scale(1)';
+                            }}
+                            title="Delete custom tag"
+                          >
+                            ×
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Add Custom Tag */}
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    marginBottom: '8px',
+                    color: '#1A1A1A',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Create New Tag
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="Tag name"
+                      value={newTagName}
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCustomTag();
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        fontSize: '14px',
+                        border: '2px solid #1A1A1A',
+                        fontFamily: '"Work Sans", sans-serif',
+                      }}
+                    />
+                    <input
+                      type="color"
+                      value={newTagColor}
+                      onChange={(e) => setNewTagColor(e.target.value)}
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        border: '2px solid #1A1A1A',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <button
+                      onClick={handleAddCustomTag}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#1A1A1A',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        fontFamily: '"Work Sans", sans-serif',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end',
+              }}>
+                <button
+                  onClick={onClose}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'transparent',
+                    border: '2px solid #1A1A1A',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    fontFamily: '"Work Sans", sans-serif',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => onSave(formData)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    fontFamily: '"Work Sans", sans-serif',
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
     </>
   );
-}
-
-// Rock component (inline)
-function Rock({
-  rock,
-  index,
-  columnId,
-  allTags,
-  isViewOnly,
-  isDraggingGlobal,
-  onEdit,
-  onDelete,
-  onUpdateSize,
-  onDragStart,
-  onDragOver,
-  onDrop
-}) {
-  const [isDragging, setIsDragging] = useState(false);
-
-  const sizeStyles = {
-    small: { minHeight: '80px' },
-    medium: { minHeight: '180px' },
-    large: { minHeight: '280px' },
-  };
-
-  const isDone = columnId === 'done';
-  const displaySize = isDone ? ROCK_SIZES.SMALL : rock.size;
-  const isEditable = !isViewOnly && !isDone;
-
-  return (
-    <div
-      draggable={!isViewOnly}
-      onDragStart={(e) => {
-        if (isViewOnly) {
-          e.preventDefault();
-          return;
-        }
-        setIsDragging(true);
-        e.dataTransfer.effectAllowed = 'move';
-        onDragStart();
-      }}
-      onDragEnd={() => setIsDragging(false)}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      style={{
-        ...sizeStyles[displaySize],
-        backgroundColor: '#FFFFFF',
-        border: '2px solid #1A1A1A',
-        padding: '20px',
-        marginBottom: '16px',
-        boxShadow: isDragging
-          ? '0 8px 24px rgba(0,0,0,0.25)'
-          : '0 2px 8px rgba(0,0,0,0.1)',
-        cursor: 'grab',
-        position: 'relative',
-        transition: isDraggingGlobal ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        opacity: isDragging ? 0.5 : (isDone ? 0.7 : 1),
-        display: 'flex',
-        flexDirection: 'column',
-        transform: isDragging ? 'scale(1.02)' : 'scale(1)',
-        pointerEvents: isDraggingGlobal && !isDragging ? 'none' : 'auto',
-        animation: rock.deleting 
-          ? 'rockDelete 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-          : rock.justCompleted
-            ? 'rockComplete 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
-            : rock.justUncompleted
-              ? 'rockUncomplete 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-              : rock.newlyCreated
-                ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                : 'none',
-      }}
-      onMouseEnter={(e) => {
-        if (!isDragging && !isDone && !isDraggingGlobal) {
-          e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)';
-          e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isDragging && !isDone && !isDraggingGlobal) {
-          e.currentTarget.style.transform = 'translateY(0) scale(1)';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        }
-      }}
-    >
-      {/* ... rest of Rock JSX ... */}
-    </div>
-  );
-}
-
-// RockEditModal component (inline)
-function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
-  // ... your full RockEditModal code from Claude ...
 }
