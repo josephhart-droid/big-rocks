@@ -162,7 +162,7 @@ export default function App() {
         cleanupDragState();
       }
     };
-    
+
     const handleDragEnd = () => {
       setTimeout(cleanupDragState, 100);
     };
@@ -170,7 +170,7 @@ export default function App() {
     document.addEventListener('keydown', handleEscape);
     document.addEventListener('dragend', handleDragEnd);
     document.addEventListener('drop', handleDragEnd);
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('dragend', handleDragEnd);
@@ -196,7 +196,7 @@ export default function App() {
 
   const addRock = (columnId) => {
     if (isViewOnly) return;
-    
+
     const newRock = {
       id: `rock-${Date.now()}`,
       title: 'New Initiative',
@@ -324,9 +324,9 @@ export default function App() {
       cleanupDragState();
       return;
     }
-    
+
     const { rock, columnId: sourceColumnId, index: sourceIndex } = draggedRock;
-    
+
     if (sourceColumnId === targetColumnId && sourceIndex === targetIndex) {
       cleanupDragState();
       return;
@@ -340,18 +340,18 @@ export default function App() {
     const isUncompletingRock = sourceColumnId === 'done' && targetColumnId !== 'done';
 
     if (isCompletingRock) {
-      updatedRock.completedDate = new Date().toLocaleDateString('en-GB', { 
-        day: '2-digit', 
-        month: 'short', 
-        year: 'numeric' 
+      updatedRock.completedDate = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
       });
       updatedRock.justCompleted = true;
       updatedRock.size = ROCK_SIZES.SMALL;
-      
+
       setShowDone(true);
       setDoneContainerCelebrating(true);
       setTimeout(() => setDoneContainerCelebrating(false), 600);
-      
+
       setTimeout(() => {
         setColumns(prev => ({
           ...prev,
@@ -368,7 +368,7 @@ export default function App() {
     if (isUncompletingRock) {
       delete updatedRock.completedDate;
       updatedRock.justUncompleted = true;
-      
+
       setTimeout(() => {
         setColumns(prev => ({
           ...prev,
@@ -386,7 +386,7 @@ export default function App() {
       const newRocks = Array.from(columns[sourceColumnId].rocks);
       newRocks.splice(sourceIndex, 1);
       newRocks.splice(targetIndex, 0, updatedRock);
-      
+
       setColumns(prev => ({
         ...prev,
         [sourceColumnId]: {
@@ -447,21 +447,15 @@ export default function App() {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&family=Inter:wght@900&display=swap');
-          
+
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
           }
 
           @keyframes slideUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
           }
 
           @keyframes rockAppear {
@@ -502,7 +496,6 @@ export default function App() {
         padding: '48px 24px',
       }}>
         <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          
           {/* View-Only Banner */}
           {isViewOnly && (
             <div style={{
@@ -537,128 +530,129 @@ export default function App() {
             }}>
               BIG ROCKS
             </h1>
-            
-{!isViewOnly && (
-  <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
-    <button
-      onClick={() => setShowShareMenu(!showShareMenu)}
-      style={{
-        padding: '12px 24px',
-        backgroundColor: '#1A1A1A',
-        color: '#FFFFFF',
-        border: 'none',
-        fontSize: '14px',
-        fontWeight: '700',
-        cursor: 'pointer',
-        textTransform: 'uppercase',
-        letterSpacing: '1px',
-        fontFamily: '"Work Sans", sans-serif',
-        transition: 'all 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-1px)';
-        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)';
-        e.target.style.boxShadow = 'none';
-      }}
-    >
-      Share
-    </button>
 
-    {showShareMenu && (
-      <div
-        data-share-menu  // ← THIS IS THE CRITICAL FIX: makes click-outside work
-        style={{
-          position: 'absolute',
-          top: '100%',
-          right: 0,
-          marginTop: '8px',
-          backgroundColor: 'white',
-          border: '2px solid #1A1A1A',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 1000,
-          borderRadius: '4px',
-          overflow: 'hidden',
-          minWidth: '220px',
-        }}
-      >
-        <button
-          onClick={() => {
-            copyShareLink(false);
-            setShowShareMenu(false); // optional: close after copy
-          }}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            background: 'transparent',
-            border: 'none',
-            textAlign: 'left',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontFamily: '"Work Sans", sans-serif',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-          onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
-          onMouseLeave={(e) => e.target.style.background = 'transparent'}
-        >
-          📋 View Only
-        </button>
+            {!isViewOnly && (
+              <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
+                <button
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontFamily: '"Work Sans", sans-serif',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Share
+                </button>
 
-        <button
-          disabled
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            background: '#f9f9f9',
-            border: 'none',
-            textAlign: 'left',
-            cursor: 'not-allowed',
-            fontSize: '14px',
-            fontFamily: '"Work Sans", sans-serif',
-            color: '#999',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            opacity: 0.7,
-          }}
-        >
-          ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
-        </button>
-      </div>
-    )}
+                {showShareMenu && (
+                  <div
+                    data-share-menu
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '8px',
+                      backgroundColor: 'white',
+                      border: '2px solid #1A1A1A',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 1000,
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      minWidth: '220px',
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        copyShareLink(false);
+                        setShowShareMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: 'transparent',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontFamily: '"Work Sans", sans-serif',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+                      onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                    >
+                      📋 View Only
+                    </button>
 
-    <button
-      onClick={exportToPNG}
-      style={{
-        padding: '12px 24px',
-        backgroundColor: '#1A1A1A',
-        color: '#FFFFFF',
-        border: 'none',
-        fontSize: '14px',
-        fontWeight: '700',
-        cursor: 'pointer',
-        textTransform: 'uppercase',
-        letterSpacing: '1px',
-        fontFamily: '"Work Sans", sans-serif',
-        transition: 'all 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-1px)';
-        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)';
-        e.target.style.boxShadow = 'none';
-      }}
-    >
-      Export PNG
-    </button>
-  </div>
-)}
+                    <button
+                      disabled
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: '#f9f9f9',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'not-allowed',
+                        fontSize: '14px',
+                        fontFamily: '"Work Sans", sans-serif',
+                        color: '#999',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        opacity: 0.7,
+                      }}
+                    >
+                      ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  onClick={exportToPNG}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontFamily: '"Work Sans", sans-serif',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Export PNG
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Black Separator Line */}
           <div style={{
@@ -668,7 +662,6 @@ export default function App() {
 
           {/* Export Container */}
           <div id="export-container" style={{ paddingBottom: '48px' }}>
-
             {/* Product Name */}
             <div style={{ marginBottom: '48px' }}>
               {editingProductName ? (
@@ -745,21 +738,11 @@ export default function App() {
                   + Filter by Tag
                 </button>
               ) : (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                }}>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    color: '#666',
-                  }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: '#666' }}>
                     Filter by Tag
                   </div>
-                  
+
                   <div style={{ position: 'relative', display: 'inline-block' }}>
                     {activeFilter && (
                       <div style={{
@@ -800,7 +783,7 @@ export default function App() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       setActiveFilter(null);
@@ -834,7 +817,7 @@ export default function App() {
               gap: '32px',
             }}>
               {Object.entries(columns).filter(([columnId]) => columnId !== 'done').map(([columnId, column]) => (
-                <div 
+                <div
                   key={columnId}
                   onDragOver={(e) => handleDragOver(e, columnId, column.rocks.length)}
                   onDrop={() => handleDrop(columnId, column.rocks.length)}
@@ -886,7 +869,7 @@ export default function App() {
                         {column.title}
                       </h2>
                     )}
-                    
+
                     <button
                       onClick={() => addRock(columnId)}
                       disabled={isViewOnly}
@@ -959,13 +942,12 @@ export default function App() {
                 </div>
               ))}
             </div>
-
           </div> {/* End export-container */}
 
           {/* DONE Section */}
           {columns.done && (
             <div style={{ marginTop: '48px' }}>
-              <div 
+              <div
                 style={{
                   borderTop: '2px solid #1A1A1A',
                   paddingTop: '24px',
@@ -1001,9 +983,7 @@ export default function App() {
                     borderRadius: '2px',
                     transition: 'all 0.2s',
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#F5F5F5';
-                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#F5F5F5'}
                   onMouseLeave={(e) => {
                     if (!(dragOverInfo && dragOverInfo.columnId === 'done' && !showDone)) {
                       e.target.style.backgroundColor = 'transparent';
@@ -1084,7 +1064,7 @@ export default function App() {
                             />
                           ))}
 
-                        {dragOverInfo && dragOverInfo.columnId === 'done' && 
+                        {dragOverInfo && dragOverInfo.columnId === 'done' &&
                          dragOverInfo.overIndex === columns.done.rocks.length && (
                           <div style={{
                             height: '4px',
@@ -1101,7 +1081,7 @@ export default function App() {
           )}
         </div>
 
-        {/* RockEditModal - now used so ESLint is happy */}
+        {/* RockEditModal */}
         {editingRock && (
           <RockEditModal
             rock={editingRock}
@@ -1112,7 +1092,7 @@ export default function App() {
               setEditingRock(null);
             }}
             onAddCustomTag={addCustomTag}
-            onDeleteCustomTag={() => {}} // stub - add real impl if needed
+            onDeleteCustomTag={() => {}} // stub - implement later if needed
             onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
           />
         )}
@@ -1183,7 +1163,7 @@ function Rock({
         flexDirection: 'column',
         transform: isDragging ? 'scale(1.02)' : 'scale(1)',
         pointerEvents: isDraggingGlobal && !isDragging ? 'none' : 'auto',
-        animation: rock.deleting 
+        animation: rock.deleting
           ? 'rockDelete 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
           : rock.justCompleted
             ? 'rockComplete 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -1589,7 +1569,7 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
             {allTags.map(tag => {
               const isSelected = formData.tags.includes(tag.name);
               const isThemeTag = THEME_TAGS.some(t => t.name === tag.name);
-              
+
               return (
                 <button
                   key={tag.name}
