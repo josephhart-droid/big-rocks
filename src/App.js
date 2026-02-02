@@ -105,8 +105,6 @@ function Rock({
               : rock.newlyCreated
                 ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
                 : 'none',
-        cursor: 'grab',
-        userSelect: 'none',
       }}
       onMouseEnter={(e) => {
         if (!isDragging && !isDone && !isDraggingGlobal) {
@@ -300,7 +298,7 @@ function Rock({
 }
 
 // ============================================================================
-// ROCK EDIT MODAL COMPONENT
+// ROCK EDIT MODAL
 // ============================================================================
 
 function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
@@ -1125,25 +1123,6 @@ export default function App() {
 
   return (
     <>
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&family=Inter:wght@900&display=swap');
-          
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes rockAppear { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 60% { transform: scale(1.02) translateY(0); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-          @keyframes rockDelete { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.9) translateX(-20px); } }
-          @keyframes rockComplete { 0% { transform: scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.1); } 30% { transform: scale(1.08); box-shadow: 0 8px 24px rgba(30, 132, 73, 0.3); } 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.1); } }
-          @keyframes rockUncomplete { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(0.95); box-shadow: 0 4px 16px rgba(231, 76, 60, 0.2); } 100% { transform: scale(1); opacity: 1; } }
-          @keyframes doneContainerPulse { 0%, 100% { background-color: #F5F5F5; } 50% { background-color: #D4F1D4; } }
-
-          .rock { cursor: grab !important; }
-          .rock * { cursor: grab !important; }
-          .rock button, .rock button * { cursor: pointer !important; }
-          .rock h3, .rock p, .rock div, .rock span, .rock [style*="background-color"], .rock [style*="backgroundColor"] { cursor: grab !important; user-select: none !important; }
-        `}
-      </style>
-
       <div style={{
         minHeight: '100vh',
         backgroundColor: '#F0F0F0',
@@ -1151,7 +1130,7 @@ export default function App() {
         fontFamily: '"Work Sans", sans-serif',
         padding: '48px 24px',
       }}>
-        <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           {/* View-Only Banner */}
           {isViewOnly && (
             <div style={{
