@@ -438,7 +438,7 @@ export default function App() {
 
   const exportToPNG = async () => {
     try {
-      const element = document.getElementById('export-area');
+      const element = document.getElementById('export-container');
 
       const canvas = await html2canvas(element, {
         backgroundColor: '#F0F0F0',
