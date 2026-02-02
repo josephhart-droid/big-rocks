@@ -184,6 +184,25 @@ export default function App() {
     setCustomTags(prev => [...prev, { name: tagName, color }]);
   };
 
+  const deleteCustomTag = (tagName) => {
+    setCustomTags(prev => prev.filter(t => t.name !== tagName));
+
+    // Clean up the tag from all rocks to avoid stale references
+    setColumns(prevColumns => {
+      const newColumns = { ...prevColumns };
+      Object.keys(newColumns).forEach(colKey => {
+        newColumns[colKey] = {
+          ...newColumns[colKey],
+          rocks: newColumns[colKey].rocks.map(rock => ({
+            ...rock,
+            tags: rock.tags ? rock.tags.filter(t => t !== tagName) : [],
+          })),
+        };
+      });
+      return newColumns;
+    });
+  };
+
   const generateShareLink = (editable) => {
     const data = { columns, productName, customTags, editable };
     const encoded = btoa(JSON.stringify(data));
@@ -1151,7 +1170,7 @@ export default function App() {
               setEditingRock(null);
             }}
             onAddCustomTag={addCustomTag}
-            onDeleteCustomTag={() => {}} // stub
+            onDeleteCustomTag={deleteCustomTag}  // ← Now real deletion
             onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
           />
         )}
@@ -1231,8 +1250,6 @@ function Rock({
               : rock.newlyCreated
                 ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
                 : 'none',
-        cursor: 'grab',
-        userSelect: 'none',
       }}
       onMouseEnter={(e) => {
         if (!isDragging && !isDone && !isDraggingGlobal) {
