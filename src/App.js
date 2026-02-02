@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 
 // ============================================================================
@@ -114,6 +114,8 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
 
+  const shareMenuRef = useRef(null);
+
   const [isViewOnly] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -147,13 +149,13 @@ export default function App() {
   }, [customTags, isViewOnly]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (showShareMenu && !e.target.closest('[data-share-menu]')) {
+    const handleClickOutside = (event) => {
+      if (showShareMenu && shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
         setShowShareMenu(false);
       }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showShareMenu]);
 
   useEffect(() => {
@@ -191,7 +193,7 @@ export default function App() {
   const copyShareLink = (editable) => {
     const link = generateShareLink(editable);
     navigator.clipboard.writeText(link);
-    alert(editable ? 'Editable link copied!' : 'View-only link copied!');
+    alert(editable ? 'View-only link copied!' : 'Editable link copied!');
   };
 
   const addRock = (columnId) => {
@@ -447,7 +449,7 @@ export default function App() {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&family=Inter:wght@900&display=swap');
-
+          
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -484,6 +486,15 @@ export default function App() {
           @keyframes doneContainerPulse {
             0%, 100% { background-color: #F5F5F5; }
             50% { background-color: #D4F1D4; }
+          }
+
+          /* Cursor fix: grab on whole rock, pointer only on buttons */
+          .rock,
+          .rock > * {
+            cursor: grab;
+          }
+          .rock button {
+            cursor: pointer !important;
           }
         `}
       </style>
@@ -534,7 +545,10 @@ export default function App() {
             {!isViewOnly && (
               <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
                 <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowShareMenu(prev => !prev);
+                  }}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#1A1A1A',
@@ -562,7 +576,7 @@ export default function App() {
 
                 {showShareMenu && (
                   <div
-                    data-share-menu
+                    ref={shareMenuRef}
                     style={{
                       position: 'absolute',
                       top: '100%',
@@ -595,8 +609,8 @@ export default function App() {
                         alignItems: 'center',
                         gap: '8px',
                       }}
-                      onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
-                      onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                      onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
+                      onMouseLeave={(e) => (e.target.style.background = 'transparent')}
                     >
                       📋 View Only
                     </button>
@@ -916,28 +930,49 @@ export default function App() {
                         return rock.tags && rock.tags.includes(activeFilter);
                       })
                       .map((rock, index) => (
-                        <Rock
-                          key={rock.id}
-                          rock={rock}
-                          index={index}
-                          columnId={columnId}
-                          allTags={allTags}
-                          isViewOnly={isViewOnly}
-                          isDraggingGlobal={!!draggedRock}
-                          onEdit={() => setEditingRock({ ...rock, columnId })}
-                          onDelete={() => deleteRock(columnId, rock.id)}
-                          onUpdateSize={(newSize) => updateRock(columnId, rock.id, { size: newSize })}
-                          onDragStart={() => handleDragStart(rock, columnId, index)}
-                          onDragOver={(e) => {
-                            e.stopPropagation();
-                            handleDragOver(e, columnId, index);
-                          }}
-                          onDrop={(e) => {
-                            e.stopPropagation();
-                            handleDrop(columnId, index);
-                          }}
-                        />
+                        <React.Fragment key={rock.id}>
+                          {/* Drop indicator BEFORE this rock */}
+                          {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === index && (
+                            <div style={{
+                              height: '4px',
+                              backgroundColor: '#1A1A1A',
+                              margin: '12px 20px',
+                              borderRadius: '2px',
+                            }} />
+                          )}
+
+                          <Rock
+                            rock={rock}
+                            index={index}
+                            columnId={columnId}
+                            allTags={allTags}
+                            isViewOnly={isViewOnly}
+                            isDraggingGlobal={!!draggedRock}
+                            onEdit={() => setEditingRock({ ...rock, columnId })}
+                            onDelete={() => deleteRock(columnId, rock.id)}
+                            onUpdateSize={(newSize) => updateRock(columnId, rock.id, { size: newSize })}
+                            onDragStart={() => handleDragStart(rock, columnId, index)}
+                            onDragOver={(e) => {
+                              e.stopPropagation();
+                              handleDragOver(e, columnId, index);
+                            }}
+                            onDrop={(e) => {
+                              e.stopPropagation();
+                              handleDrop(columnId, index);
+                            }}
+                          />
+                        </React.Fragment>
                       ))}
+
+                    {/* Drop indicator at BOTTOM */}
+                    {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && (
+                      <div style={{
+                        height: '4px',
+                        backgroundColor: '#1A1A1A',
+                        margin: '12px 20px',
+                        borderRadius: '2px',
+                      }} />
+                    )}
                   </div>
                 </div>
               ))}
@@ -1041,35 +1076,47 @@ export default function App() {
                             return rock.tags && rock.tags.includes(activeFilter);
                           })
                           .map((rock, index) => (
-                            <Rock
-                              key={rock.id}
-                              rock={rock}
-                              index={index}
-                              columnId="done"
-                              allTags={allTags}
-                              isViewOnly={isViewOnly}
-                              isDraggingGlobal={!!draggedRock}
-                              onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
-                              onDelete={() => deleteRock('done', rock.id)}
-                              onUpdateSize={(newSize) => updateRock('done', rock.id, { size: newSize })}
-                              onDragStart={() => handleDragStart(rock, 'done', index)}
-                              onDragOver={(e) => {
-                                e.stopPropagation();
-                                handleDragOver(e, 'done', index);
-                              }}
-                              onDrop={(e) => {
-                                e.stopPropagation();
-                                handleDrop('done', index);
-                              }}
-                            />
+                            <React.Fragment key={rock.id}>
+                              {/* Drop indicator BEFORE rock in DONE */}
+                              {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === index && (
+                                <div style={{
+                                  height: '4px',
+                                  backgroundColor: '#1A1A1A',
+                                  margin: '12px 20px',
+                                  borderRadius: '2px',
+                                }} />
+                              )}
+
+                              <Rock
+                                rock={rock}
+                                index={index}
+                                columnId="done"
+                                allTags={allTags}
+                                isViewOnly={isViewOnly}
+                                isDraggingGlobal={!!draggedRock}
+                                onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
+                                onDelete={() => deleteRock('done', rock.id)}
+                                onUpdateSize={(newSize) => updateRock('done', rock.id, { size: newSize })}
+                                onDragStart={() => handleDragStart(rock, 'done', index)}
+                                onDragOver={(e) => {
+                                  e.stopPropagation();
+                                  handleDragOver(e, 'done', index);
+                                }}
+                                onDrop={(e) => {
+                                  e.stopPropagation();
+                                  handleDrop('done', index);
+                                }}
+                              />
+                            </React.Fragment>
                           ))}
 
-                        {dragOverInfo && dragOverInfo.columnId === 'done' &&
-                         dragOverInfo.overIndex === columns.done.rocks.length && (
+                        {/* Bottom indicator in DONE */}
+                        {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === columns.done.rocks.length && (
                           <div style={{
                             height: '4px',
                             backgroundColor: '#1A1A1A',
-                            marginTop: columns.done.rocks.length > 0 ? '0' : '16px',
+                            margin: '12px 20px',
+                            borderRadius: '2px',
                           }} />
                         )}
                       </>
@@ -1092,7 +1139,7 @@ export default function App() {
               setEditingRock(null);
             }}
             onAddCustomTag={addCustomTag}
-            onDeleteCustomTag={() => {}} // stub - implement later if needed
+            onDeleteCustomTag={() => {}} // stub
             onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
           />
         )}
@@ -1133,6 +1180,7 @@ function Rock({
 
   return (
     <div
+      className="rock"
       draggable={!isViewOnly}
       onDragStart={(e) => {
         if (isViewOnly) {
@@ -1155,7 +1203,6 @@ function Rock({
         boxShadow: isDragging
           ? '0 8px 24px rgba(0,0,0,0.25)'
           : '0 2px 8px rgba(0,0,0,0.1)',
-        cursor: 'grab',
         position: 'relative',
         transition: isDraggingGlobal ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         opacity: isDragging ? 0.5 : (isDone ? 0.7 : 1),
@@ -1454,12 +1501,8 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
               letterSpacing: '0.5px',
               transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#1A1A1A';
-            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#1A1A1A'}
           >
             Duplicate
           </button>
