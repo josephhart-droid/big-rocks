@@ -1231,8 +1231,8 @@ function Rock({
               : rock.newlyCreated
                 ? 'rockAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
                 : 'none',
-        cursor: 'grab',  // Inline cursor for extra strength
-        user-select: 'none',  // Inline user-select to prevent text cursor
+        cursor: 'grab',
+        userSelect: 'none',
       }}
       onMouseEnter={(e) => {
         if (!isDragging && !isDone && !isDraggingGlobal) {
@@ -1348,8 +1348,6 @@ function Rock({
         color: '#1A1A1A',
         wordBreak: 'break-word',
         paddingRight: '80px',
-        cursor: 'grab',  // Inline for text elements
-        user-select: 'none',
       }}>
         {rock.title}
       </h3>
@@ -1361,8 +1359,6 @@ function Rock({
           margin: '0 0 auto 0',
           color: 'rgba(26,26,26,0.85)',
           fontWeight: '500',
-          cursor: 'grab',  // Inline for text elements
-          user-select: 'none',
         }}>
           {rock.description}
         </p>
@@ -1376,8 +1372,6 @@ function Rock({
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
           marginTop: displaySize === ROCK_SIZES.SMALL ? 'auto' : '8px',
-          cursor: 'grab',  // Inline for text elements
-          user-select: 'none',
         }}>
           {rock.date}
         </div>
@@ -1391,8 +1385,6 @@ function Rock({
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
           marginTop: '8px',
-          cursor: 'grab',  // Inline for text elements
-          user-select: 'none',
         }}>
           ✓ {rock.completedDate}
         </div>
@@ -1404,8 +1396,6 @@ function Rock({
           flexWrap: 'wrap',
           gap: '6px',
           marginTop: '12px',
-          cursor: 'grab',  // Inline for container
-          user-select: 'none',
         }}>
           {rock.tags.map((tagName) => {
             const tag = allTags.find(t => t.name === tagName);
@@ -1424,8 +1414,6 @@ function Rock({
                   display: 'inline-flex',
                   alignItems: 'center',
                   lineHeight: '1',
-                  cursor: 'grab',  // Inline for tags
-                  user-select: 'none',
                 }}
               >
                 {tag.name}
