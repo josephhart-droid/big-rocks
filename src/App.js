@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 
 // ============================================================================
@@ -114,6 +114,8 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
 
+  const shareMenuRef = useRef(null);
+
   const [isViewOnly] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -146,14 +148,17 @@ export default function App() {
     }
   }, [customTags, isViewOnly]);
 
+  // Click outside handler for share menu
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (showShareMenu && !e.target.closest('[data-share-menu]')) {
+    const handleClickOutside = (event) => {
+      if (showShareMenu && shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
         setShowShareMenu(false);
       }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [showShareMenu]);
 
   useEffect(() => {
@@ -191,7 +196,7 @@ export default function App() {
   const copyShareLink = (editable) => {
     const link = generateShareLink(editable);
     navigator.clipboard.writeText(link);
-    alert(editable ? 'Editable link copied!' : 'View-only link copied!');
+    alert(editable ? 'View-only link copied!' : 'Editable link copied!');
   };
 
   const addRock = (columnId) => {
@@ -447,7 +452,7 @@ export default function App() {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&family=Inter:wght@900&display=swap');
-
+          
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -534,7 +539,10 @@ export default function App() {
             {!isViewOnly && (
               <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
                 <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowShareMenu(prev => !prev);
+                  }}
                   style={{
                     padding: '12px 24px',
                     backgroundColor: '#1A1A1A',
@@ -562,7 +570,7 @@ export default function App() {
 
                 {showShareMenu && (
                   <div
-                    data-share-menu
+                    ref={shareMenuRef}
                     style={{
                       position: 'absolute',
                       top: '100%',
@@ -595,8 +603,8 @@ export default function App() {
                         alignItems: 'center',
                         gap: '8px',
                       }}
-                      onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
-                      onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                      onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
+                      onMouseLeave={(e) => (e.target.style.background = 'transparent')}
                     >
                       📋 View Only
                     </button>
@@ -1454,12 +1462,8 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
               letterSpacing: '0.5px',
               transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#333';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#1A1A1A';
-            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#1A1A1A'}
           >
             Duplicate
           </button>
