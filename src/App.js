@@ -1140,8 +1140,7 @@ export default function App() {
         onDragOver,
         onDrop
       }) {
-        const [isDragging, setIsDragging] = useState(false);
-
+  const [isDragging, setIsDragging] = useState(false);
         const sizeStyles = {
           small: { minHeight: '80px' },
           medium: { minHeight: '180px' },
