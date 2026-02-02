@@ -488,18 +488,26 @@ export default function App() {
             50% { background-color: #D4F1D4; }
           }
 
-          /* Cursor fix: force grab on entire rock (including white areas) */
-          .rock {
-            cursor: grab !important;
-          }
-          .rock * {
-            cursor: grab !important;
-          }
-          .rock button,
-          .rock button * {
-            cursor: pointer !important; /* buttons stay clickable */
-          }
-        `}
+          /* Force grab cursor on the entire rock card and all its content */
+.rock,
+.rock * {
+  cursor: grab !important;
+}
+
+/* But restore pointer/hand on interactive buttons so they feel clickable */
+.rock button,
+.rock button * {
+  cursor: pointer !important;
+}
+
+/* Extra protection: prevent text selection cursor on any non-button content */
+.rock h3,
+.rock p,
+.rock div:not(.action-buttons),
+.rock span {
+  cursor: grab !important;
+  user-select: none;  /* also stops accidental text highlighting while dragging */
+}
       </style>
 
       <div style={{
