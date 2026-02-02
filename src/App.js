@@ -300,7 +300,7 @@ function Rock({
 }
 
 // ============================================================================
-// ROCK EDIT MODAL
+// ROCK EDIT MODAL COMPONENT
 // ============================================================================
 
 function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
@@ -844,7 +844,6 @@ export default function App() {
   const deleteCustomTag = (tagName) => {
     setCustomTags(prev => prev.filter(t => t.name !== tagName));
 
-    // Clean up from all rocks
     setColumns(prevColumns => {
       const newColumns = { ...prevColumns };
       Object.keys(newColumns).forEach(colKey => {
@@ -1146,175 +1145,180 @@ export default function App() {
       </style>
 
       <div style={{
-        height: '100vh',
-        width: '100vw',
-        margin: 0,
-        padding: 0,
+        minHeight: '100vh',
         backgroundColor: '#F0F0F0',
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E")`,
         fontFamily: '"Work Sans", sans-serif',
-        overflowX: 'hidden',
+        padding: '48px 24px',
       }}>
-        {/* Header */}
-        <div style={{
-          padding: '0 24px',
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '24px',
-        }}>
-          <h1 style={{
-            fontSize: '12px',
-            fontWeight: '700',
-            margin: 0,
-            padding: '12px 0',
-            color: '#1A1A1A',
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-          }}>
-            BIG ROCKS
-          </h1>
-
-          {!isViewOnly && (
-            <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowShareMenu(prev => !prev);
-                }}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#1A1A1A',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  fontFamily: '"Work Sans", sans-serif',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              >
-                Share
-              </button>
-
-              {showShareMenu && (
-                <div
-                  ref={shareMenuRef}
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    backgroundColor: 'white',
-                    border: '2px solid #1A1A1A',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    minWidth: '220px',
-                  }}
-                >
-                  <button
-                    onClick={() => {
-                      copyShareLink(false);
-                      setShowShareMenu(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'transparent',
-                      border: 'none',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontFamily: '"Work Sans", sans-serif',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                    onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
-                    onMouseLeave={(e) => (e.target.style.background = 'transparent')}
-                  >
-                    📋 View Only
-                  </button>
-
-                  <button
-                    disabled
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: '#f9f9f9',
-                      border: 'none',
-                      textAlign: 'left',
-                      cursor: 'not-allowed',
-                      fontSize: '14px',
-                      fontFamily: '"Work Sans", sans-serif',
-                      color: '#999',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      opacity: 0.7,
-                    }}
-                  >
-                    ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
-                  </button>
-                </div>
-              )}
-
-              <button
-                onClick={exportToPNG}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#1A1A1A',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  fontFamily: '"Work Sans", sans-serif',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              >
-                Export PNG
-              </button>
+        <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* View-Only Banner */}
+          {isViewOnly && (
+            <div style={{
+              backgroundColor: '#F39C12',
+              color: '#1A1A1A',
+              padding: '12px 24px',
+              marginBottom: '24px',
+              fontSize: '14px',
+              fontWeight: '700',
+              textAlign: 'center',
+            }}>
+              👁️ View-Only Mode - You're viewing a shared roadmap
             </div>
           )}
-        </div>
 
-        {/* Top black separator */}
-        <div style={{
-          borderTop: '2px solid #1A1A1A',
-          margin: '0 24px 48px',
-        }} />
+          {/* Header */}
+          <div style={{
+            marginBottom: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '24px',
+          }}>
+            <h1 style={{
+              fontSize: '12px',
+              fontWeight: '700',
+              margin: 0,
+              padding: '12px 0',
+              color: '#1A1A1A',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+            }}>
+              BIG ROCKS
+            </h1>
 
-        {/* EXPORT AREA */}
-        <div id="export-area" style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: '0 24px',
-          overflow: 'hidden',
-        }}>
+            {!isViewOnly && (
+              <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowShareMenu(prev => !prev);
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontFamily: '"Work Sans", sans-serif',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Share
+                </button>
+
+                {showShareMenu && (
+                  <div
+                    ref={shareMenuRef}
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '8px',
+                      backgroundColor: 'white',
+                      border: '2px solid #1A1A1A',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 1000,
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      minWidth: '220px',
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        copyShareLink(false);
+                        setShowShareMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: 'transparent',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontFamily: '"Work Sans", sans-serif',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                      onMouseEnter={(e) => (e.target.style.background = '#f5f5f5')}
+                      onMouseLeave={(e) => (e.target.style.background = 'transparent')}
+                    >
+                      📋 View Only
+                    </button>
+
+                    <button
+                      disabled
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: '#f9f9f9',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'not-allowed',
+                        fontSize: '14px',
+                        fontFamily: '"Work Sans", sans-serif',
+                        color: '#999',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        opacity: 0.7,
+                      }}
+                    >
+                      ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  onClick={exportToPNG}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#1A1A1A',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    fontFamily: '"Work Sans", sans-serif',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Export PNG
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Black Separator Line */}
+          <div style={{
+            borderTop: '2px solid #1A1A1A',
+            marginBottom: '48px',
+          }} />
+
           {/* Product Name */}
           <div style={{ marginBottom: '48px' }}>
             {editingProductName ? (
@@ -1616,17 +1620,18 @@ export default function App() {
           </div>
         </div>
 
-        {/* Bottom black separator */}
+        {/* Black Separator Line */}
         <div style={{
           borderTop: '2px solid #1A1A1A',
-          margin: '48px 24px 0',
+          marginBottom: '48px',
         }} />
 
         {/* DONE Section */}
         {columns.done && (
-          <div style={{ marginTop: '48px', padding: '0 24px' }}>
+          <div style={{ marginTop: '48px' }}>
             <div
               style={{
+                borderTop: '2px solid #1A1A1A',
                 paddingTop: '24px',
                 marginBottom: '16px',
               }}
@@ -1768,7 +1773,6 @@ export default function App() {
         )}
       </div>
 
-      {/* RockEditModal */}
       {editingRock && (
         <RockEditModal
           rock={editingRock}
