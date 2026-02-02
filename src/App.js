@@ -445,10 +445,10 @@ export default function App() {
         scale: 2,
         logging: false,
         useCORS: true,
-        width: element.scrollWidth + 200,
-        height: element.scrollHeight + 200,
-        windowWidth: element.scrollWidth + 200,
-        windowHeight: element.scrollHeight + 200,
+        width: element.offsetWidth,        // ✅ Changed - no +200
+        height: element.offsetHeight,      // ✅ Changed - no +200
+        windowWidth: element.scrollWidth,  // ✅ Changed - no +200
+        windowHeight: element.scrollHeight, // ✅ Changed - no +200
       });
 
       const link = document.createElement('a');
