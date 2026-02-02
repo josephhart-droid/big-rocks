@@ -715,7 +715,11 @@ export default function App() {
             }} />
 
             {/* Export Container */}
-            <div id="export-container" style={{ paddingBottom: '48px' }}>
+            <div id="export-container" style={{ 
+              padding: '48px',           // Padding on all sides
+              maxWidth: '1400px',        // Constrain width
+              margin: '0 auto',          // Center it
+              }}>
               {/* Product Name */}
               <div style={{ marginBottom: '48px' }}>
                 {editingProductName ? (
