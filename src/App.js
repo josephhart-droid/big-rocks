@@ -488,26 +488,25 @@ export default function App() {
             50% { background-color: #D4F1D4; }
           }
 
-          /* Force grab cursor on the entire rock card and all its content */
-.rock,
-.rock * {
-  cursor: grab !important;
-}
-
-/* But restore pointer/hand on interactive buttons so they feel clickable */
-.rock button,
-.rock button * {
-  cursor: pointer !important;
-}
-
-/* Extra protection: prevent text selection cursor on any non-button content */
-.rock h3,
-.rock p,
-.rock div:not(.action-buttons),
-.rock span {
-  cursor: grab !important;
-  user-select: none;  /* also stops accidental text highlighting while dragging */
-}
+          /* Cursor fix: aggressive grab on entire rock card */
+          .rock {
+            cursor: grab !important;
+          }
+          .rock * {
+            cursor: grab !important;
+          }
+          .rock button,
+          .rock button * {
+            cursor: pointer !important;
+          }
+          .rock h3,
+          .rock p,
+          .rock div:not(.action-buttons),
+          .rock span {
+            cursor: grab !important;
+            user-select: none; /* prevents text cursor */
+          }
+        `}
       </style>
 
       <div style={{
@@ -975,7 +974,7 @@ export default function App() {
                         </React.Fragment>
                       ))}
 
-                    {/* Black drop indicator at BOTTOM of column */}
+                    {/* Black drop indicator at BOTTOM */}
                     {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && (
                       <div style={{
                         height: '4px',
@@ -1088,7 +1087,7 @@ export default function App() {
                           })
                           .map((rock, index) => (
                             <React.Fragment key={rock.id}>
-                              {/* Drop indicator BEFORE rock in DONE */}
+                              {/* Black drop indicator BEFORE rock in DONE */}
                               {dragOverInfo && dragOverInfo.columnId === 'done' && dragOverInfo.overIndex === index && (
                                 <div style={{
                                   height: '4px',
