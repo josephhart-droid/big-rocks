@@ -488,7 +488,7 @@ export default function App() {
             50% { background-color: #D4F1D4; }
           }
 
-          /* Cursor fix: aggressive grab on entire rock card */
+          /* Cursor fix: maximum strength to force grab on entire rock card */
           .rock {
             cursor: grab !important;
           }
@@ -496,15 +496,19 @@ export default function App() {
             cursor: grab !important;
           }
           .rock button,
+          .rock button:hover,
+          .rock button:focus,
           .rock button * {
             cursor: pointer !important;
           }
           .rock h3,
           .rock p,
-          .rock div:not(.action-buttons),
-          .rock span {
+          .rock div,
+          .rock span,
+          .rock [style*="background-color"],
+          .rock [style*="backgroundColor"] {
             cursor: grab !important;
-            user-select: none; /* prevents text cursor */
+            user-select: none !important;
           }
         `}
       </style>
