@@ -538,114 +538,127 @@ export default function App() {
               BIG ROCKS
             </h1>
             
-            {!isViewOnly && (
-              <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
-                <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: '#1A1A1A',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontFamily: '"Work Sans", sans-serif',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Share
-                </button>
+{!isViewOnly && (
+  <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
+    <button
+      onClick={() => setShowShareMenu(!showShareMenu)}
+      style={{
+        padding: '12px 24px',
+        backgroundColor: '#1A1A1A',
+        color: '#FFFFFF',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        fontFamily: '"Work Sans", sans-serif',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'translateY(-1px)';
+        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = 'none';
+      }}
+    >
+      Share
+    </button>
 
-                {showShareMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    backgroundColor: 'white',
-                    border: '2px solid #1A1A1A',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    animation: 'slideUp 0.2s ease-out',
-                  }}>
-                    <button
-                      onClick={() => copyShareLink(false)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontFamily: '"Work Sans", sans-serif',
-                        borderBottom: '1px solid #F0F0F0',
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#F0F0F0'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                      📋 View Only
-                    </button>
-                    <button
-                      disabled
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        cursor: 'not-allowed',
-                        fontSize: '14px',
-                        fontFamily: '"Work Sans", sans-serif',
-                        color: '#999',
-                        opacity: 0.6,
-                      }}
-                    >
-                      ✏️ Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic', marginLeft: '8px' }}>(Coming soon)</span>
-                    </button>
-                  </div>
-                )}
+    {showShareMenu && (
+      <div
+        data-share-menu  // ← THIS IS THE CRITICAL FIX: makes click-outside work
+        style={{
+          position: 'absolute',
+          top: '100%',
+          right: 0,
+          marginTop: '8px',
+          backgroundColor: 'white',
+          border: '2px solid #1A1A1A',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          borderRadius: '4px',
+          overflow: 'hidden',
+          minWidth: '220px',
+        }}
+      >
+        <button
+          onClick={() => {
+            copyShareLink(false);
+            setShowShareMenu(false); // optional: close after copy
+          }}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            background: 'transparent',
+            border: 'none',
+            textAlign: 'left',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontFamily: '"Work Sans", sans-serif',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+          onMouseLeave={(e) => e.target.style.background = 'transparent'}
+        >
+          📋 View Only
+        </button>
 
-                <button
-                  onClick={exportToPNG}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: '#1A1A1A',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontFamily: '"Work Sans", sans-serif',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-1px)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  Export PNG
-                </button>
-              </div>
-            )}
-          </div>
+        <button
+          disabled
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            background: '#f9f9f9',
+            border: 'none',
+            textAlign: 'left',
+            cursor: 'not-allowed',
+            fontSize: '14px',
+            fontFamily: '"Work Sans", sans-serif',
+            color: '#999',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            opacity: 0.7,
+          }}
+        >
+          ✏️ Share Editable Copy <span style={{ fontSize: '11px', fontStyle: 'italic' }}>(coming soon)</span>
+        </button>
+      </div>
+    )}
+
+    <button
+      onClick={exportToPNG}
+      style={{
+        padding: '12px 24px',
+        backgroundColor: '#1A1A1A',
+        color: '#FFFFFF',
+        border: 'none',
+        fontSize: '14px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        fontFamily: '"Work Sans", sans-serif',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'translateY(-1px)';
+        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = 'none';
+      }}
+    >
+      Export PNG
+    </button>
+  </div>
+)}
 
           {/* Black Separator Line */}
           <div style={{
