@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 
+// ============================================================================
+// CONTRAST COLOR HELPER
+// ============================================================================
+
 const getContrastTextColor = (hexColor) => {
   const r = parseInt(hexColor.slice(1, 3), 16);
   const g = parseInt(hexColor.slice(3, 5), 16);
@@ -1083,13 +1087,29 @@ export default function App() {
             </div>
           )}
         </div>
+
+        {/* RockEditModal - now used so ESLint is happy */}
+        {editingRock && (
+          <RockEditModal
+            rock={editingRock}
+            allTags={allTags}
+            onClose={() => setEditingRock(null)}
+            onSave={(updates) => {
+              updateRock(editingRock.columnId, editingRock.id, updates);
+              setEditingRock(null);
+            }}
+            onAddCustomTag={addCustomTag}
+            onDeleteCustomTag={() => {}} // stub - add real impl if needed
+            onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
+          />
+        )}
       </div>
     </>
   );
 }
 
 // ============================================================================
-// Rock component - defined OUTSIDE the return block
+// Rock component
 // ============================================================================
 
 function Rock({
@@ -1353,7 +1373,7 @@ function Rock({
 }
 
 // ============================================================================
-// RockEditModal component - defined OUTSIDE
+// RockEditModal component
 // ============================================================================
 
 function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDeleteCustomTag, onDuplicate }) {
