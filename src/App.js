@@ -488,13 +488,16 @@ export default function App() {
             50% { background-color: #D4F1D4; }
           }
 
-          /* Cursor fix: grab on whole rock, pointer only on buttons */
-          .rock,
-          .rock > * {
-            cursor: grab;
+          /* Cursor fix: force grab on entire rock (including white areas) */
+          .rock {
+            cursor: grab !important;
           }
-          .rock button {
-            cursor: pointer !important;
+          .rock * {
+            cursor: grab !important;
+          }
+          .rock button,
+          .rock button * {
+            cursor: pointer !important; /* buttons stay clickable */
           }
         `}
       </style>
@@ -931,7 +934,7 @@ export default function App() {
                       })
                       .map((rock, index) => (
                         <React.Fragment key={rock.id}>
-                          {/* Drop indicator BEFORE this rock */}
+                          {/* Black drop indicator BEFORE this rock */}
                           {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === index && (
                             <div style={{
                               height: '4px',
@@ -964,7 +967,7 @@ export default function App() {
                         </React.Fragment>
                       ))}
 
-                    {/* Drop indicator at BOTTOM */}
+                    {/* Black drop indicator at BOTTOM of column */}
                     {dragOverInfo && dragOverInfo.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && (
                       <div style={{
                         height: '4px',
