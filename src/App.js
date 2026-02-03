@@ -454,7 +454,7 @@ export default function App() {
       // Crop ~50px from right (at 2x scale) to remove potential scrollbar artifact
       const croppedCanvas = document.createElement('canvas');
       const ctx = croppedCanvas.getContext('2d');
-      croppedCanvas.width = canvas.width - 100;
+      croppedCanvas.width = canvas.width - 120;
       croppedCanvas.height = canvas.height;
       ctx.drawImage(canvas, 0, 0);
 
