@@ -212,7 +212,7 @@ export default function App() {
   const copyShareLink = (editable) => {
     const link = generateShareLink(editable);
     navigator.clipboard.writeText(link);
-    alert(editable ? 'View-only link copied!' : 'Editable link copied!');
+    alert(editable ? 'Editable link copied!' : 'View-only link copied!');
   };
 
   const addRock = (columnId) => {
