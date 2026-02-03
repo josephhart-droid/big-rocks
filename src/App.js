@@ -571,7 +571,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Header */}
+{/* Header */}
             <div style={{
               marginBottom: '16px',
               display: 'flex',
@@ -579,17 +579,32 @@ export default function App() {
               alignItems: 'center',
               gap: '24px',
             }}>
-              <h1 style={{
-                fontSize: '12px',
-                fontWeight: '700',
-                margin: 0,
-                padding: '12px 0',
-                color: '#1A1A1A',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
               }}>
-                BIG ROCKS
-              </h1>
+                <img 
+                  src="/big-rocks-image.png" 
+                  alt="Boulder" 
+                  style={{ 
+                    width: '32px', 
+                    height: '32px',
+                    objectFit: 'contain',
+                  }} 
+                />
+                <h1 style={{
+                  fontSize: '18px',
+                  fontWeight: '900',
+                  margin: 0,
+                  color: '#1A1A1A',
+                  letterSpacing: '-1px',
+                  textTransform: 'uppercase',
+                  lineHeight: '0.9',
+                }}>
+                  BIG<br/>ROCKS
+                </h1>
+              </div>
 
               {!isViewOnly && (
                 <div style={{ display: 'flex', gap: '12px', position: 'relative' }}>
