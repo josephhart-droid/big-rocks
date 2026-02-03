@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 
@@ -188,7 +187,7 @@ export default function App() {
   const deleteCustomTag = (tagName) => {
     setCustomTags(prev => prev.filter(t => t.name !== tagName));
 
-    // Clean up the tag from all rocks to avoid stale references
+    // Clean up the tag from all rocks
     setColumns(prevColumns => {
       const newColumns = { ...prevColumns };
       Object.keys(newColumns).forEach(colKey => {
@@ -446,23 +445,23 @@ export default function App() {
         scale: 2,
         logging: false,
         useCORS: true,
-        width: element.offsetWidth,        // ✅ Changed - no +200
-        height: element.offsetHeight,      // ✅ Changed - no +200
-        windowWidth: element.scrollWidth,  // ✅ Changed - no +200
-        windowHeight: element.scrollHeight, // ✅ Changed - no +200
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       });
 
- // Crop 20px off the right to remove scrollbar
-    const croppedCanvas = document.createElement('canvas');
-    const ctx = croppedCanvas.getContext('2d');
-    croppedCanvas.width = canvas.width - 100; // 20px * scale(2)
-    croppedCanvas.height = canvas.height;
-    ctx.drawImage(canvas, 0, 0);
+      // Crop ~50px from right (at 2x scale) to remove potential scrollbar artifact
+      const croppedCanvas = document.createElement('canvas');
+      const ctx = croppedCanvas.getContext('2d');
+      croppedCanvas.width = canvas.width - 100;
+      croppedCanvas.height = canvas.height;
+      ctx.drawImage(canvas, 0, 0);
 
-    const link = document.createElement('a');
-    link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
-    link.href = croppedCanvas.toDataURL('image/png');
-    link.click();
+      const link = document.createElement('a');
+      link.download = `${productName.replace(/\s+/g, '-').toLowerCase()}-roadmap.png`;
+      link.href = croppedCanvas.toDataURL('image/png');
+      link.click();
       
     } catch (error) {
       console.error('Export failed:', error);
@@ -516,7 +515,6 @@ export default function App() {
             50% { background-color: #D4F1D4; }
           }
 
-          /* Cursor fix: aggressive grab on entire rock card */
           .rock {
             cursor: grab !important;
           }
@@ -571,7 +569,7 @@ export default function App() {
               </div>
             )}
 
-{/* Header */}
+            {/* Header */}
             <div style={{
               marginBottom: '16px',
               display: 'flex',
@@ -740,10 +738,10 @@ export default function App() {
 
             {/* Export Container */}
             <div id="export-container" style={{ 
-              padding: '48px',           // Padding on all sides
-              maxWidth: '1400px',        // Constrain width
-              margin: '0 auto',          // Center it
-              }}>
+              padding: '48px',           
+              maxWidth: '1400px',        
+              margin: '0 auto',          
+            }}>
               {/* Product Name */}
               <div style={{ marginBottom: '48px' }}>
                 {editingProductName ? (
@@ -1194,9 +1192,54 @@ export default function App() {
                 )}
               </div>
             )}
-          </div>
-        </div>
 
+            {/* Footer Separator + Footer */}
+            <div style={{
+              borderTop: '2px solid #1A1A1A',
+              margin: '96px auto 0',
+              paddingTop: '48px',
+              maxWidth: '1400px',
+            }}>
+              <div style={{
+                fontSize: '13px',
+                lineHeight: '1.6',
+                color: '#666',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '16px',
+              }}>
+                <span>
+                  🔒 Your data, your browser. <strong>BIG ROCKS</strong> stores your roadmap locally. We never see it.
+                </span>
+                
+                <span style={{
+                  fontSize: '12px',
+                  color: '#999',
+                }}>
+                  © {new Date().getFullYear()}{' '}
+                  <a 
+                    href="https://joehart.work/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#1A1A1A',
+                      textDecoration: 'none',
+                      fontWeight: '700',
+                    }}
+                    onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                  >
+                    Joe Hart
+                  </a>
+                </span>
+              </div>
+            </div>
+
+          </div> {/* export-area */}
+        </div> {/* padded container */}
+        
         {/* RockEditModal */}
         {editingRock && (
           <RockEditModal
@@ -1556,7 +1599,7 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
           </h3>
           <button
             onClick={() => {
-              onDuplicate(rock);
+              onDuplicate();
               onClose();
             }}
             style={{
