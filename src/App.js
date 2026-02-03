@@ -1194,53 +1194,9 @@ export default function App() {
                 )}
               </div>
             )}
-</>
-                      )}
-                    </div>
-
-            {/* Footer Separator */}
-            <div style={{
-              borderTop: '2px solid #1A1A1A',
-              marginTop: '96px',
-              paddingTop: '48px',
-            }}>
-              {/* Footer */}
-              <div style={{
-                fontSize: '13px',
-                lineHeight: '1.6',
-                color: '#666',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <span>
-                  🔒 Your data, your browser. BIG ROCKS stores your roadmap locally. We never see it.
-                </span>
-                
-                <span style={{
-                  fontSize: '12px',
-                  color: '#999',
-                }}>
-                  © 2026{' '}
-                  <a 
-                    href="https://joehart.work/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{
-                      color: '#1A1A1A',
-                      textDecoration: 'none',
-                      fontWeight: '700',
-                    }}
-                    onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-                    onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
-                  >
-                    Joe Hart
-                  </a>
-                </span>
-              </div>
-            </div>
           </div>
         </div>
+
         {/* RockEditModal */}
         {editingRock && (
           <RockEditModal
