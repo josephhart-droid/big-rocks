@@ -471,8 +471,9 @@ export default function App() {
       `}</style>
 
       <div style={{
-        minHeight: '100vh',
-        width: '100%',
+        height: '100vh',
+        width: '100vw',
+        overflowY: 'auto',
         margin: 0,
         padding: 0,
         backgroundColor: '#F0F0F0',
@@ -573,7 +574,7 @@ export default function App() {
             <div style={{ borderTop: '2px solid #1A1A1A', marginBottom: '40px' }} />
 
             {/* Export Container */}
-            <div id="export-container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            <div id="export-container" style={{ padding: '48px', maxWidth: '1400px', margin: '0 auto' }}>
 
               {/* Product Name */}
               <div style={{ marginBottom: '40px' }}>
