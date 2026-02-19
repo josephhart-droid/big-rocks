@@ -407,15 +407,15 @@ export default function App() {
                             {rocks.length === 0
                               ? <div style={{ border: '2px dashed #D0D0D0', padding: '48px 24px', textAlign: 'center', color: '#999', fontSize: '14px', lineHeight: '1.8', backgroundColor: overId === colId && activeDragRock ? 'rgba(231,76,60,0.04)' : 'transparent', transition: 'background-color 0.2s' }}>🪨<br />Drag rocks here or click + to add</div>
                               : rocks.map(rock => (
-                                <SortableRock key={rock.id} rock={rock} columnId={colId} allTags={allTags} isViewOnly={isViewOnly} editingRockTitle={editingRockTitle}
-                                  onEdit={() => setEditingRock({ ...rock, columnId: colId })}
-                                  onDelete={() => deleteRock(colId, rock.id)}
-                                  onUpdateSize={s => updateRock(colId, rock.id, { size: s })}
-                                  onStartEditTitle={() => setEditingRockTitle({ columnId: colId, rockId: rock.id })}
-                                  onSaveTitle={t => { updateRock(colId, rock.id, { title: t }); setEditingRockTitle(null); }}
-                                  onCancelEditTitle={() => setEditingRockTitle(null)}
-                                />
-                              ))
+                                  <SortableRock key={rock.id} rock={rock} columnId={colId} allTags={allTags} isViewOnly={isViewOnly} editingRockTitle={editingRockTitle}
+                                    onEdit={() => setEditingRock({ ...rock, columnId: colId })}
+                                    onDelete={() => deleteRock(colId, rock.id)}
+                                    onUpdateSize={s => updateRock(colId, rock.id, { size: s })}
+                                    onStartEditTitle={() => setEditingRockTitle({ columnId: colId, rockId: rock.id })}
+                                    onSaveTitle={t => { updateRock(colId, rock.id, { title: t }); setEditingRockTitle(null); }}
+                                    onCancelEditTitle={() => setEditingRockTitle(null)}
+                                  />
+                                ))
                             }
                           </DroppableColumn>
                         </SortableContext>
@@ -585,14 +585,14 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
 
       {isEditingTitle
         ? <input ref={titleRef} type="text" value={titleVal}
-          onChange={e => setTitleVal(e.target.value)}
-          onBlur={() => onSaveTitle(titleVal.trim() || rock.title)}
-          onKeyDown={e => { e.stopPropagation(); if (e.key === 'Enter') onSaveTitle(titleVal.trim() || rock.title); if (e.key === 'Escape') { setTitleVal(rock.title); onCancelEditTitle(); } }}
-          style={{ fontSize: '18px', fontWeight: '900', fontFamily: '"Work Sans",sans-serif', border: '2px solid #1A1A1A', borderRadius: '2px', backgroundColor: 'white', padding: '4px 8px', marginBottom: '8px', color: '#1A1A1A', width: 'calc(100% - 88px)', boxSizing: 'border-box', outline: 'none', boxShadow: '0 0 0 3px rgba(231,76,60,0.2)', position: 'relative', zIndex: 2 }}
-        />
+            onChange={e => setTitleVal(e.target.value)}
+            onBlur={() => onSaveTitle(titleVal.trim() || rock.title)}
+            onKeyDown={e => { e.stopPropagation(); if (e.key === 'Enter') onSaveTitle(titleVal.trim() || rock.title); if (e.key === 'Escape') { setTitleVal(rock.title); onCancelEditTitle(); } }}
+            style={{ fontSize: '18px', fontWeight: '900', fontFamily: '"Work Sans",sans-serif', border: '2px solid #1A1A1A', borderRadius: '2px', backgroundColor: 'white', padding: '4px 8px', marginBottom: '8px', color: '#1A1A1A', width: 'calc(100% - 88px)', boxSizing: 'border-box', outline: 'none', boxShadow: '0 0 0 3px rgba(231,76,60,0.2)', position: 'relative', zIndex: 2 }}
+          />
         : <h3 onClick={e => { if (isEditable) { e.stopPropagation(); onStartEditTitle(); } }}
-          style={{ fontSize: '18px', fontWeight: '900', margin: '0 0 8px', color: '#1A1A1A', wordBreak: 'break-word', paddingRight: isEditable ? '80px' : '0', cursor: isEditable ? 'text' : 'default', position: 'relative', zIndex: 2 }}
-        >{rock.title}</h3>
+            style={{ fontSize: '18px', fontWeight: '900', margin: '0 0 8px', color: '#1A1A1A', wordBreak: 'break-word', paddingRight: isEditable ? '80px' : '0', cursor: isEditable ? 'text' : 'default', position: 'relative', zIndex: 2 }}
+          >{rock.title}</h3>
       }
 
       {rock.description && displaySize !== SZ.SMALL && (
@@ -633,7 +633,7 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '24px', animation: 'fadeIn 0.2s ease-out' }}>
       
-      {/* ── Font fix for modal ── */}
+      {/* Font fix for modal */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700;900&family=Inter:wght@900&display=swap');
         * { box-sizing: border-box; }
@@ -646,9 +646,9 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
         </div>
 
         {[
-          { label: 'Title', key: 'title', type: 'input', inputType: 'text', fs: '16px' },
-          { label: 'Description', key: 'description', type: 'textarea', rows: 4, fs: '14px' },
-          { label: 'Date (Optional)', key: 'date', type: 'input', inputType: 'text', fs: '14px', placeholder: 'Q2 2025' },
+          { label: 'Title',          key: 'title',       type: 'input',    inputType: 'text',   fs: '16px' },
+          { label: 'Description',    key: 'description', type: 'textarea', rows: 4,             fs: '14px' },
+          { label: 'Date (Optional)',key: 'date',        type: 'input',    inputType: 'text',   fs: '14px', placeholder: 'Q2 2025' },
         ].map(f => (
           <div key={f.key} style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', color: '#1A1A1A' }}>{f.label}</label>
