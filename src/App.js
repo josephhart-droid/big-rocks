@@ -47,6 +47,38 @@ const ROCK_SIZES = {
 };
 
 // ============================================================================
+// LEFT-EDGE DONE ZONE — proper dnd-kit droppable
+// ============================================================================
+
+function DoneZoneStrip({ isActive }) {
+  const { setNodeRef, isOver } = useDroppable({ id: 'done-zone-strip' });
+  const highlighted = isOver || isActive;
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        position: 'fixed', left: 0, top: 0, bottom: 0, width: '80px', zIndex: 1000,
+        background: highlighted
+          ? 'linear-gradient(to right, rgba(231,76,60,0.55), rgba(231,76,60,0.12))'
+          : 'linear-gradient(to right, rgba(231,76,60,0.28), rgba(231,76,60,0.04))',
+        borderRight: highlighted ? '4px solid #E74C3C' : '4px solid rgba(231,76,60,0.6)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.15s ease',
+      }}
+    >
+      <div style={{
+        writingMode: 'vertical-rl', transform: 'rotate(180deg)',
+        fontSize: '11px', fontWeight: '900', letterSpacing: '2px',
+        color: highlighted ? '#E74C3C' : 'rgba(231,76,60,0.8)',
+        textTransform: 'uppercase', userSelect: 'none',
+      }}>
+        {highlighted ? '✓ DROP TO DONE' : 'DROP → DONE'}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // DROPPABLE COLUMN WRAPPER
 // ============================================================================
 
@@ -171,7 +203,6 @@ export default function App() {
   const [showFilter, setShowFilter] = useState(false);
   const [activeDragRock, setActiveDragRock] = useState(null);
   const [overId, setOverId] = useState(null);
-  const [doneZoneActive, setDoneZoneActive] = useState(false);
 
   const shareMenuRef = useRef(null);
 
@@ -202,6 +233,31 @@ export default function App() {
   const findColumnOfRock = (rockId) =>
     Object.keys(columns).find(colId => columns[colId].rocks.some(r => r.id === rockId));
 
+  const completeRock = (rock, sourceColumnId) => {
+    const updatedRock = {
+      ...rock,
+      completedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      justCompleted: true,
+      size: ROCK_SIZES.SMALL,
+    };
+    delete updatedRock.newlyCreated;
+    delete updatedRock.deleting;
+    setColumns(prev => ({
+      ...prev,
+      [sourceColumnId]: { ...prev[sourceColumnId], rocks: prev[sourceColumnId].rocks.filter(r => r.id !== rock.id) },
+      done: { ...prev.done, rocks: [...prev.done.rocks, updatedRock] },
+    }));
+    setShowDone(true);
+    setDoneContainerCelebrating(true);
+    setTimeout(() => setDoneContainerCelebrating(false), 600);
+    setTimeout(() => {
+      setColumns(prev => ({
+        ...prev,
+        done: { ...prev.done, rocks: prev.done.rocks.map(r => r.id === rock.id ? { ...r, justCompleted: false } : r) },
+      }));
+    }, 600);
+  };
+
   const handleDragStart = ({ active }) => {
     const colId = findColumnOfRock(active.id);
     if (!colId) return;
@@ -217,6 +273,8 @@ export default function App() {
     const overColId = findColumnOfRock(over.id) || (columns[over.id] ? over.id : null);
 
     if (!activeColId || !overColId || activeColId === overColId) return;
+    // Don't do live cross-column move into done-zone-strip
+    if (over.id === 'done-zone-strip') return;
 
     setColumns(prev => {
       const activeRocks = [...prev[activeColId].rocks];
@@ -235,9 +293,20 @@ export default function App() {
   };
 
   const handleDragEnd = ({ active, over }) => {
+    const draggedRockInfo = activeDragRock;
     setActiveDragRock(null);
     setOverId(null);
     if (!over) return;
+
+    // Dropped on the left-edge done zone strip
+    if (over.id === 'done-zone-strip') {
+      const sourceColId = findColumnOfRock(active.id);
+      if (sourceColId && sourceColId !== 'done') {
+        const rock = columns[sourceColId].rocks.find(r => r.id === active.id);
+        if (rock) completeRock(rock, sourceColId);
+      }
+      return;
+    }
 
     const activeColId = findColumnOfRock(active.id);
     const overColId = findColumnOfRock(over.id) || (columns[over.id] ? over.id : null);
@@ -257,7 +326,7 @@ export default function App() {
       return;
     }
 
-    // Completing a rock by dropping into done
+    // Completing a rock dropped into done
     if (overColId === 'done' && activeColId !== 'done') {
       setColumns(prev => ({
         ...prev,
@@ -279,30 +348,34 @@ export default function App() {
           done: { ...prev.done, rocks: prev.done.rocks.map(r => r.id === active.id ? { ...r, justCompleted: false } : r) },
         }));
       }, 600);
+      return;
     }
 
-    // Un-completing a rock moved out of done
+    // Restoring a rock from done back to a live column
     if (activeColId === 'done' && overColId !== 'done') {
-      setColumns(prev => ({
-        ...prev,
-        [overColId]: {
-          ...prev[overColId],
-          rocks: prev[overColId].rocks.map(r => {
-            if (r.id === active.id) {
-              const updated = { ...r, justUncompleted: true };
-              delete updated.completedDate;
-              return updated;
-            }
-            return r;
-          }),
-        },
-      }));
+      setColumns(prev => {
+        const doneRocks = prev.done.rocks.filter(r => r.id !== active.id);
+        const restoredRock = { ...prev.done.rocks.find(r => r.id === active.id) };
+        delete restoredRock.completedDate;
+        restoredRock.justUncompleted = true;
+        restoredRock.size = restoredRock.size || ROCK_SIZES.MEDIUM;
+        const targetRocks = [...prev[overColId].rocks];
+        const overIndex = targetRocks.findIndex(r => r.id === over.id);
+        const insertAt = overIndex >= 0 ? overIndex : targetRocks.length;
+        targetRocks.splice(insertAt, 0, restoredRock);
+        return {
+          ...prev,
+          done: { ...prev.done, rocks: doneRocks },
+          [overColId]: { ...prev[overColId], rocks: targetRocks },
+        };
+      });
       setTimeout(() => {
         setColumns(prev => ({
           ...prev,
           [overColId]: { ...prev[overColId], rocks: prev[overColId].rocks.map(r => r.id === active.id ? { ...r, justUncompleted: false } : r) },
         }));
       }, 600);
+      return;
     }
   };
 
@@ -383,6 +456,7 @@ export default function App() {
 
   const allTags = [...THEME_TAGS, ...customTags];
   const nonDoneEntries = Object.entries(columns).filter(([id]) => id !== 'done');
+  const isDraggingFromLive = activeDragRock && activeDragRock.columnId !== 'done';
 
   return (
     <>
@@ -397,8 +471,6 @@ export default function App() {
         @keyframes rockComplete { 0% { transform:scale(1) } 30% { transform:scale(1.08) } 100% { transform:scale(1) } }
         @keyframes rockUncomplete { 0% { transform:scale(1); opacity:0.7 } 50% { transform:scale(0.95) } 100% { transform:scale(1); opacity:1 } }
         @keyframes doneContainerPulse { 0%,100% { border-color:#D0D0D0 } 50% { border-color:#27AE60 } }
-        @keyframes doneZonePulse { 0%,100% { opacity:0.85 } 50% { opacity:1 } }
-        @keyframes doneZoneFlash { 0%,100% { border-right-color:#E74C3C } 50% { border-right-color:#ff6b6b } }
         @keyframes descEnter { 0% { opacity: 0; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -406,29 +478,11 @@ export default function App() {
       `}</style>
 
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-        <div style={{ height: '100vh', width: '100vw', overflowY: 'auto', overflowX: 'hidden', margin: 0, padding: 0, backgroundColor: '#F0F0F0', backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`, fontFamily: '"Work Sans", sans-serif' }}>
 
-          {/* Left-edge DONE zone — appears while dragging a non-done rock */}
-          {activeDragRock && activeDragRock.columnId !== 'done' && !isViewOnly && (
-            <div
-              onMouseEnter={() => setDoneZoneActive(true)}
-              onMouseLeave={() => setDoneZoneActive(false)}
-              style={{
-                position: 'fixed', left: 0, top: 0, bottom: 0, width: '80px', zIndex: 1000,
-                background: doneZoneActive
-                  ? 'linear-gradient(to right, rgba(231,76,60,0.55), rgba(231,76,60,0.12))'
-                  : 'linear-gradient(to right, rgba(231,76,60,0.28), rgba(231,76,60,0.04))',
-                borderRight: doneZoneActive ? '4px solid #E74C3C' : '4px solid rgba(231,76,60,0.6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                animation: doneZoneActive ? 'doneZoneFlash 0.4s ease-in-out infinite' : 'doneZonePulse 1.5s ease-in-out infinite',
-                pointerEvents: 'none',
-              }}
-            >
-              <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '11px', fontWeight: '900', letterSpacing: '2px', color: doneZoneActive ? '#E74C3C' : 'rgba(231,76,60,0.8)', textTransform: 'uppercase', userSelect: 'none' }}>
-                {doneZoneActive ? '✓ DROP TO DONE' : 'DROP → DONE'}
-              </div>
-            </div>
-          )}
+        {/* Left-edge DONE zone — only shown when dragging a live rock */}
+        {isDraggingFromLive && !isViewOnly && <DoneZoneStrip isActive={overId === 'done-zone-strip'} />}
+
+        <div style={{ height: '100vh', width: '100vw', overflowY: 'auto', overflowX: 'hidden', margin: 0, padding: 0, backgroundColor: '#F0F0F0', backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`, fontFamily: '"Work Sans", sans-serif' }}>
 
           <div style={{ minHeight: '100%', padding: '24px 24px 80px', boxSizing: 'border-box' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -596,7 +650,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Drag Overlay — floating ghost while dragging */}
+        {/* Drag Overlay — floating ghost while dragging, preserves full styling */}
         <DragOverlay>
           {activeDragRock ? (
             <Rock
@@ -673,6 +727,7 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
         cursor: isDragOverlay ? 'grabbing' : isEditingTitle ? 'default' : 'grab',
         userSelect: isEditingTitle ? 'text' : 'none',
         animation: rock.deleting ? 'rockDelete 0.3s cubic-bezier(0.4,0,0.2,1) forwards' : rock.justCompleted ? 'rockComplete 0.6s cubic-bezier(0.34,1.56,0.64,1)' : rock.justUncompleted ? 'rockUncomplete 0.6s cubic-bezier(0.4,0,0.2,1)' : rock.newlyCreated ? 'rockAppear 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
+        width: isDragOverlay ? '100%' : undefined,
       }}
     >
       {/* Invisible drag handle covers the whole card */}
