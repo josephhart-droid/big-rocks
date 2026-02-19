@@ -92,13 +92,16 @@ function DroppableColumn({ id, children }) {
 // ============================================================================
 
 function SortableRock({ rock, columnId, allTags, isViewOnly, editingRockTitle, onEdit, onDelete, onUpdateSize, onStartEditTitle, onSaveTitle, onCancelEditTitle }) {
+  const isDoneRock = columnId === 'done';
+  // Done rocks are always draggable (so they can be restored to live columns)
+  const dragDisabled = isDoneRock ? false : isViewOnly;
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: rock.id,
-    disabled: isViewOnly,
+    disabled: dragDisabled,
     data: { columnId, rock },
   });
 
-  // Smooth spring-like transition instead of the default abrupt snap
   const smoothTransition = isDragging
     ? 'none'
     : 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)';
@@ -116,7 +119,7 @@ function SortableRock({ rock, columnId, allTags, isViewOnly, editingRockTitle, o
         rock={rock}
         columnId={columnId}
         allTags={allTags}
-        isViewOnly={isViewOnly}
+        isViewOnly={isDoneRock ? false : isViewOnly}
         editingRockTitle={editingRockTitle}
         isDragOverlay={false}
         dragHandleProps={{ ...attributes, ...listeners }}
@@ -313,8 +316,11 @@ export default function App() {
         [currentColId]: { ...prev[currentColId], rocks: prev[currentColId].rocks.filter(r => r.id !== active.id) },
         done: { ...prev.done, rocks: [...prev.done.rocks, completedRock] },
       }));
-      // Open done section but DON'T scroll — just reveal it silently
+      // Open done section without scrolling — lock scroll position then restore
+      const scrollEl = document.documentElement.scrollTop > 0 ? document.documentElement : document.body;
+      const scrollY = scrollEl.scrollTop;
       setShowDone(true);
+      requestAnimationFrame(() => { scrollEl.scrollTop = scrollY; });
       setDoneContainerCelebrating(true);
       setTimeout(() => setDoneContainerCelebrating(false), 600);
       setTimeout(() => {
@@ -357,7 +363,10 @@ export default function App() {
           ),
         },
       }));
+      const scrollEl2 = document.documentElement.scrollTop > 0 ? document.documentElement : document.body;
+      const scrollY2 = scrollEl2.scrollTop;
       setShowDone(true);
+      requestAnimationFrame(() => { scrollEl2.scrollTop = scrollY2; });
       setDoneContainerCelebrating(true);
       setTimeout(() => setDoneContainerCelebrating(false), 600);
       setTimeout(() => {
@@ -683,7 +692,8 @@ export default function App() {
           {activeDragRock ? (
             <Rock
               rock={activeDragRock.rock}
-              columnId={activeDragRock.columnId}
+              columnId="now"
+              overlaySize={activeDragRock.rock.size || 'medium'}
               allTags={allTags}
               isViewOnly={true}
               editingRockTitle={null}
@@ -716,7 +726,7 @@ export default function App() {
 // ROCK COMPONENT
 // ============================================================================
 
-function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOverlay, dragHandleProps, onEdit, onDelete, onUpdateSize, onStartEditTitle, onSaveTitle, onCancelEditTitle }) {
+function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOverlay, overlaySize, dragHandleProps, onEdit, onDelete, onUpdateSize, onStartEditTitle, onSaveTitle, onCancelEditTitle }) {
   const [titleValue, setTitleValue] = useState(rock.title);
   const [isPressed, setIsPressed] = useState(false);
   const titleInputRef = useRef(null);
@@ -724,7 +734,7 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
   const isDone = columnId === 'done';
   const isEditingTitle = editingRockTitle?.columnId === columnId && editingRockTitle?.rockId === rock.id;
   const isEditable = !isViewOnly && !isDone;
-  const displaySize = isDone ? ROCK_SIZES.SMALL : rock.size;
+  const displaySize = isDragOverlay ? (overlaySize || rock.size) : isDone ? ROCK_SIZES.SMALL : rock.size;
 
   const sizeStyles = { small: { minHeight: '80px' }, medium: { minHeight: '180px' }, large: { minHeight: '280px' } };
 
