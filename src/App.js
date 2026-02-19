@@ -699,12 +699,18 @@ export default function App() {
                                   onDelete={() => deleteRock(columnId, rock.id)}
                                   onUpdateSize={(s) => updateRock(columnId, rock.id, { size: s })}
                                   onDragStart={() => handleDragStart(rock, columnId, index)}
-                                  onDragOver={(e) => { e.stopPropagation(); handleDragOver(e, columnId, index); }}
-                                  onDrop={(e) => { e.stopPropagation(); handleDrop(columnId, index); }}
-                                  onStartEditTitle={() => setEditingRockTitle({ columnId, rockId: rock.id })}
-                                  onSaveTitle={(t) => { updateRock(columnId, rock.id, { title: t }); setEditingRockTitle(null); }}
-                                  onCancelEditTitle={() => setEditingRockTitle(null)}
-                                />
+                                  onDragOver={(e) => {
+                                    e.stopPropagation();
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const targetIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
+                                    handleDragOver(e, columnId, targetIndex);
+                                  }}
+                                  onDrop={(e) => {
+                                    e.stopPropagation();
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const targetIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
+                                    handleDrop(columnId, targetIndex);
+                                  }}
                               </div>
                             ))}
                             {dragOverInfo?.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && <DropIndicator />}
