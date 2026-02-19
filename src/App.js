@@ -293,7 +293,6 @@ export default function App() {
   };
 
   const handleDragEnd = ({ active, over }) => {
-    const draggedRockInfo = activeDragRock;
     setActiveDragRock(null);
     setOverId(null);
     if (!over) return;
