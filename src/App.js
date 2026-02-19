@@ -47,21 +47,20 @@ const ROCK_SIZES = {
 };
 
 // ============================================================================
-// LEFT-EDGE DONE ZONE — proper dnd-kit droppable
+// LEFT-EDGE DONE ZONE
 // ============================================================================
 
-function DoneZoneStrip({ isActive }) {
+function DoneZoneStrip() {
   const { setNodeRef, isOver } = useDroppable({ id: 'done-zone-strip' });
-  const highlighted = isOver || isActive;
   return (
     <div
       ref={setNodeRef}
       style={{
         position: 'fixed', left: 0, top: 0, bottom: 0, width: '80px', zIndex: 1000,
-        background: highlighted
-          ? 'linear-gradient(to right, rgba(231,76,60,0.55), rgba(231,76,60,0.12))'
-          : 'linear-gradient(to right, rgba(231,76,60,0.28), rgba(231,76,60,0.04))',
-        borderRight: highlighted ? '4px solid #E74C3C' : '4px solid rgba(231,76,60,0.6)',
+        background: isOver
+          ? 'linear-gradient(to right, rgba(231,76,60,0.6), rgba(231,76,60,0.15))'
+          : 'linear-gradient(to right, rgba(231,76,60,0.25), rgba(231,76,60,0.03))',
+        borderRight: isOver ? '4px solid #E74C3C' : '4px solid rgba(231,76,60,0.5)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s ease',
       }}
@@ -69,10 +68,11 @@ function DoneZoneStrip({ isActive }) {
       <div style={{
         writingMode: 'vertical-rl', transform: 'rotate(180deg)',
         fontSize: '11px', fontWeight: '900', letterSpacing: '2px',
-        color: highlighted ? '#E74C3C' : 'rgba(231,76,60,0.8)',
+        color: isOver ? '#E74C3C' : 'rgba(231,76,60,0.7)',
         textTransform: 'uppercase', userSelect: 'none',
+        transition: 'color 0.15s ease',
       }}>
-        {highlighted ? '✓ DROP TO DONE' : 'DROP → DONE'}
+        {isOver ? '✓ DROP TO DONE' : 'DROP → DONE'}
       </div>
     </div>
   );
@@ -98,10 +98,16 @@ function SortableRock({ rock, columnId, allTags, isViewOnly, editingRockTitle, o
     data: { columnId, rock },
   });
 
+  // Smooth spring-like transition instead of the default abrupt snap
+  const smoothTransition = isDragging
+    ? 'none'
+    : 'transform 250ms cubic-bezier(0.25, 1, 0.5, 1)';
+
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? 'none' : transition,
-    opacity: isDragging ? 0.35 : 1,
+    transition: transition ? smoothTransition : undefined,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 10 : 'auto',
   };
 
   return (
@@ -201,13 +207,16 @@ export default function App() {
   const [doneContainerCelebrating, setDoneContainerCelebrating] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  // activeDragRock holds the full rock+columnId snapshot at drag start
+  // so we still have it even after columns state changes during drag
+  const activeDragRockRef = useRef(null);
   const [activeDragRock, setActiveDragRock] = useState(null);
   const [overId, setOverId] = useState(null);
 
   const shareMenuRef = useRef(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
   useEffect(() => {
@@ -230,51 +239,35 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showShareMenu]);
 
-  const findColumnOfRock = (rockId) =>
-    Object.keys(columns).find(colId => columns[colId].rocks.some(r => r.id === rockId));
+  // Use a ref-based lookup so handleDragEnd always sees fresh column state
+  const columnsRef = useRef(columns);
+  useEffect(() => { columnsRef.current = columns; }, [columns]);
 
-  const completeRock = (rock, sourceColumnId) => {
-    const updatedRock = {
-      ...rock,
-      completedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      justCompleted: true,
-      size: ROCK_SIZES.SMALL,
-    };
-    delete updatedRock.newlyCreated;
-    delete updatedRock.deleting;
-    setColumns(prev => ({
-      ...prev,
-      [sourceColumnId]: { ...prev[sourceColumnId], rocks: prev[sourceColumnId].rocks.filter(r => r.id !== rock.id) },
-      done: { ...prev.done, rocks: [...prev.done.rocks, updatedRock] },
-    }));
-    setShowDone(true);
-    setDoneContainerCelebrating(true);
-    setTimeout(() => setDoneContainerCelebrating(false), 600);
-    setTimeout(() => {
-      setColumns(prev => ({
-        ...prev,
-        done: { ...prev.done, rocks: prev.done.rocks.map(r => r.id === rock.id ? { ...r, justCompleted: false } : r) },
-      }));
-    }, 600);
+  const findColumnOfRock = (rockId, cols) => {
+    const target = cols || columnsRef.current;
+    return Object.keys(target).find(colId => target[colId].rocks.some(r => r.id === rockId));
   };
 
   const handleDragStart = ({ active }) => {
     const colId = findColumnOfRock(active.id);
     if (!colId) return;
-    const rock = columns[colId].rocks.find(r => r.id === active.id);
-    setActiveDragRock({ rock, columnId: colId });
+    const rock = columnsRef.current[colId].rocks.find(r => r.id === active.id);
+    const info = { rock, columnId: colId };
+    activeDragRockRef.current = info;
+    setActiveDragRock(info);
   };
 
   const handleDragOver = ({ active, over }) => {
     if (!over) return;
     setOverId(over.id);
 
+    // Never do a live cross-column move into the done-zone-strip droppable
+    if (over.id === 'done-zone-strip') return;
+
     const activeColId = findColumnOfRock(active.id);
-    const overColId = findColumnOfRock(over.id) || (columns[over.id] ? over.id : null);
+    const overColId = findColumnOfRock(over.id) || (columnsRef.current[over.id] ? over.id : null);
 
     if (!activeColId || !overColId || activeColId === overColId) return;
-    // Don't do live cross-column move into done-zone-strip
-    if (over.id === 'done-zone-strip') return;
 
     setColumns(prev => {
       const activeRocks = [...prev[activeColId].rocks];
@@ -293,27 +286,53 @@ export default function App() {
   };
 
   const handleDragEnd = ({ active, over }) => {
+    // Capture ref before clearing
+    const startInfo = activeDragRockRef.current;
+    activeDragRockRef.current = null;
     setActiveDragRock(null);
     setOverId(null);
+
     if (!over) return;
 
-    // Dropped on the left-edge done zone strip
+    // ── Left-edge DONE zone ──────────────────────────────────────────────────
     if (over.id === 'done-zone-strip') {
-      const sourceColId = findColumnOfRock(active.id);
-      if (sourceColId && sourceColId !== 'done') {
-        const rock = columns[sourceColId].rocks.find(r => r.id === active.id);
-        if (rock) completeRock(rock, sourceColId);
-      }
+      if (!startInfo || startInfo.columnId === 'done') return;
+      // Find the rock in current columns (it may have moved via dragOver)
+      const currentColId = findColumnOfRock(active.id);
+      if (!currentColId || currentColId === 'done') return;
+      const rock = columnsRef.current[currentColId].rocks.find(r => r.id === active.id);
+      if (!rock) return;
+      const completedRock = {
+        ...rock,
+        completedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        justCompleted: true,
+        size: ROCK_SIZES.SMALL,
+      };
+      setColumns(prev => ({
+        ...prev,
+        [currentColId]: { ...prev[currentColId], rocks: prev[currentColId].rocks.filter(r => r.id !== active.id) },
+        done: { ...prev.done, rocks: [...prev.done.rocks, completedRock] },
+      }));
+      // Open done section but DON'T scroll — just reveal it silently
+      setShowDone(true);
+      setDoneContainerCelebrating(true);
+      setTimeout(() => setDoneContainerCelebrating(false), 600);
+      setTimeout(() => {
+        setColumns(prev => ({
+          ...prev,
+          done: { ...prev.done, rocks: prev.done.rocks.map(r => r.id === active.id ? { ...r, justCompleted: false } : r) },
+        }));
+      }, 600);
       return;
     }
 
     const activeColId = findColumnOfRock(active.id);
-    const overColId = findColumnOfRock(over.id) || (columns[over.id] ? over.id : null);
+    const overColId = findColumnOfRock(over.id) || (columnsRef.current[over.id] ? over.id : null);
     if (!activeColId || !overColId) return;
 
-    // Reorder within same column
+    // ── Reorder within same column ───────────────────────────────────────────
     if (activeColId === overColId) {
-      const rocks = columns[activeColId].rocks;
+      const rocks = columnsRef.current[activeColId].rocks;
       const oldIndex = rocks.findIndex(r => r.id === active.id);
       const newIndex = rocks.findIndex(r => r.id === over.id);
       if (oldIndex !== newIndex) {
@@ -325,7 +344,7 @@ export default function App() {
       return;
     }
 
-    // Completing a rock dropped into done
+    // ── Drop into done (via done section droppable) ──────────────────────────
     if (overColId === 'done' && activeColId !== 'done') {
       setColumns(prev => ({
         ...prev,
@@ -350,14 +369,14 @@ export default function App() {
       return;
     }
 
-    // Restoring a rock from done back to a live column
+    // ── Restore from done back to a live column ──────────────────────────────
     if (activeColId === 'done' && overColId !== 'done') {
       setColumns(prev => {
-        const doneRocks = prev.done.rocks.filter(r => r.id !== active.id);
-        const restoredRock = { ...prev.done.rocks.find(r => r.id === active.id) };
+        const sourceRock = prev.done.rocks.find(r => r.id === active.id);
+        if (!sourceRock) return prev;
+        const restoredRock = { ...sourceRock, justUncompleted: true, size: sourceRock.size || ROCK_SIZES.MEDIUM };
         delete restoredRock.completedDate;
-        restoredRock.justUncompleted = true;
-        restoredRock.size = restoredRock.size || ROCK_SIZES.MEDIUM;
+        const doneRocks = prev.done.rocks.filter(r => r.id !== active.id);
         const targetRocks = [...prev[overColId].rocks];
         const overIndex = targetRocks.findIndex(r => r.id === over.id);
         const insertAt = overIndex >= 0 ? overIndex : targetRocks.length;
@@ -457,6 +476,9 @@ export default function App() {
   const nonDoneEntries = Object.entries(columns).filter(([id]) => id !== 'done');
   const isDraggingFromLive = activeDragRock && activeDragRock.columnId !== 'done';
 
+  // All rock IDs across done — needed so SortableContext knows about them
+  const doneRockIds = columns.done ? columns.done.rocks.map(r => r.id) : [];
+
   return (
     <>
       <style>{`
@@ -476,10 +498,15 @@ export default function App() {
         ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 3px; }
       `}</style>
 
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-
-        {/* Left-edge DONE zone — only shown when dragging a live rock */}
-        {isDraggingFromLive && !isViewOnly && <DoneZoneStrip isActive={overId === 'done-zone-strip'} />}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        {/* Left-edge DONE zone — only shown when dragging a live (non-done) rock */}
+        {isDraggingFromLive && !isViewOnly && <DoneZoneStrip />}
 
         <div style={{ height: '100vh', width: '100vw', overflowY: 'auto', overflowX: 'hidden', margin: 0, padding: 0, backgroundColor: '#F0F0F0', backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`, fontFamily: '"Work Sans", sans-serif' }}>
 
@@ -545,7 +572,7 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Columns */}
+                {/* Live columns */}
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${nonDoneEntries.length}, 1fr)`, gap: '32px' }}>
                   {nonDoneEntries.map(([columnId, column]) => {
                     const filteredRocks = column.rocks.filter(r => !activeFilter || (r.tags && r.tags.includes(activeFilter)));
@@ -602,38 +629,40 @@ export default function App() {
                       DONE ({columns.done.rocks.length})
                     </button>
                   </div>
-                  {showDone && (
-                    <div style={{ animation: 'fadeIn 0.3s ease-in' }}>
-                      <SortableContext items={columns.done.rocks.map(r => r.id)} strategy={verticalListSortingStrategy}>
-                        <DroppableColumn id="done">
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', columnGap: '16px', rowGap: '0', padding: '24px', border: '2px dashed #D0D0D0', minHeight: '80px', animation: doneContainerCelebrating ? 'doneContainerPulse 0.6s ease-in-out' : 'none' }}>
-                            {columns.done.rocks.length === 0 ? (
-                              <div style={{ gridColumn: '1/-1', padding: '32px', textAlign: 'center', color: '#999', fontSize: '14px' }}>Drag completed items here</div>
-                            ) : (
-                              columns.done.rocks
-                                .filter(r => !activeFilter || (r.tags && r.tags.includes(activeFilter)))
-                                .map((rock) => (
-                                  <SortableRock
-                                    key={rock.id}
-                                    rock={rock}
-                                    columnId="done"
-                                    allTags={allTags}
-                                    isViewOnly={isViewOnly}
-                                    editingRockTitle={editingRockTitle}
-                                    onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
-                                    onDelete={() => deleteRock('done', rock.id)}
-                                    onUpdateSize={(s) => updateRock('done', rock.id, { size: s })}
-                                    onStartEditTitle={() => {}}
-                                    onSaveTitle={() => {}}
-                                    onCancelEditTitle={() => setEditingRockTitle(null)}
-                                  />
-                                ))
-                            )}
-                          </div>
-                        </DroppableColumn>
-                      </SortableContext>
-                    </div>
-                  )}
+
+                  {/* Done droppable — visible whether or not showDone is true,
+                      but only the label shows when collapsed, so the user can
+                      still drag into it without expanding. */}
+                  <SortableContext items={doneRockIds} strategy={verticalListSortingStrategy}>
+                    <DroppableColumn id="done">
+                      {showDone && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', columnGap: '16px', rowGap: '0', padding: '24px', border: '2px dashed #D0D0D0', minHeight: '80px', animation: doneContainerCelebrating ? 'doneContainerPulse 0.6s ease-in-out' : 'none' }}>
+                          {columns.done.rocks.length === 0 ? (
+                            <div style={{ gridColumn: '1/-1', padding: '32px', textAlign: 'center', color: '#999', fontSize: '14px' }}>Drag completed items here</div>
+                          ) : (
+                            columns.done.rocks
+                              .filter(r => !activeFilter || (r.tags && r.tags.includes(activeFilter)))
+                              .map((rock) => (
+                                <SortableRock
+                                  key={rock.id}
+                                  rock={rock}
+                                  columnId="done"
+                                  allTags={allTags}
+                                  isViewOnly={isViewOnly}
+                                  editingRockTitle={editingRockTitle}
+                                  onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
+                                  onDelete={() => deleteRock('done', rock.id)}
+                                  onUpdateSize={(s) => updateRock('done', rock.id, { size: s })}
+                                  onStartEditTitle={() => {}}
+                                  onSaveTitle={() => {}}
+                                  onCancelEditTitle={() => setEditingRockTitle(null)}
+                                />
+                              ))
+                          )}
+                        </div>
+                      )}
+                    </DroppableColumn>
+                  </SortableContext>
                 </div>
               )}
 
@@ -649,8 +678,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Drag Overlay — floating ghost while dragging, preserves full styling */}
-        <DragOverlay>
+        {/* Drag Overlay — floating ghost while dragging */}
+        <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' }}>
           {activeDragRock ? (
             <Rock
               rock={activeDragRock.rock}
@@ -689,6 +718,7 @@ export default function App() {
 
 function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOverlay, dragHandleProps, onEdit, onDelete, onUpdateSize, onStartEditTitle, onSaveTitle, onCancelEditTitle }) {
   const [titleValue, setTitleValue] = useState(rock.title);
+  const [isPressed, setIsPressed] = useState(false);
   const titleInputRef = useRef(null);
 
   const isDone = columnId === 'done';
@@ -714,24 +744,35 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
       style={{
         ...sizeStyles[displaySize],
         backgroundColor: '#FFFFFF',
-        border: '3px solid #1A1A1A',
+        border: isDragOverlay ? '3px solid #E74C3C' : isPressed ? '3px solid #E74C3C' : '3px solid #1A1A1A',
         padding: '20px',
         marginBottom: isDragOverlay ? '0' : '16px',
-        boxShadow: isDragOverlay ? '0 16px 40px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+        boxShadow: isDragOverlay
+          ? '0 20px 48px rgba(0,0,0,0.35)'
+          : isPressed
+            ? '0 8px 24px rgba(0,0,0,0.18)'
+            : '0 2px 8px rgba(0,0,0,0.08)',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         opacity: isDone ? 0.7 : 1,
-        transform: isDragOverlay ? 'rotate(1.5deg)' : undefined,
-        cursor: isDragOverlay ? 'grabbing' : isEditingTitle ? 'default' : 'grab',
+        transform: isDragOverlay ? 'rotate(1.5deg) scale(1.02)' : isPressed ? 'scale(0.98)' : 'scale(1)',
+        transition: isDragOverlay ? 'none' : 'border-color 0.1s ease, box-shadow 0.1s ease, transform 0.1s ease',
+        cursor: isDragOverlay ? 'grabbing' : isEditingTitle ? 'default' : isPressed ? 'grabbing' : 'grab',
         userSelect: isEditingTitle ? 'text' : 'none',
-        animation: rock.deleting ? 'rockDelete 0.3s cubic-bezier(0.4,0,0.2,1) forwards' : rock.justCompleted ? 'rockComplete 0.6s cubic-bezier(0.34,1.56,0.64,1)' : rock.justUncompleted ? 'rockUncomplete 0.6s cubic-bezier(0.4,0,0.2,1)' : rock.newlyCreated ? 'rockAppear 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
         width: isDragOverlay ? '100%' : undefined,
+        animation: rock.deleting ? 'rockDelete 0.3s cubic-bezier(0.4,0,0.2,1) forwards' : rock.justCompleted ? 'rockComplete 0.6s cubic-bezier(0.34,1.56,0.64,1)' : rock.justUncompleted ? 'rockUncomplete 0.6s cubic-bezier(0.4,0,0.2,1)' : rock.newlyCreated ? 'rockAppear 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
       }}
     >
-      {/* Invisible drag handle covers the whole card */}
+      {/* Drag handle — covers whole card, gives press feedback */}
       {!isViewOnly && !isDone && !isEditingTitle && (
-        <div {...dragHandleProps} style={{ position: 'absolute', inset: 0, cursor: 'grab', zIndex: 0 }} />
+        <div
+          {...dragHandleProps}
+          onPointerDown={() => setIsPressed(true)}
+          onPointerUp={() => setIsPressed(false)}
+          onPointerCancel={() => setIsPressed(false)}
+          style={{ position: 'absolute', inset: 0, cursor: isPressed ? 'grabbing' : 'grab', zIndex: 0 }}
+        />
       )}
 
       {/* Action buttons */}
