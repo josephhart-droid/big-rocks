@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 
-// ============================================================================
-// CONTRAST COLOR HELPER
-// ============================================================================
-
 const getContrastTextColor = (hexColor) => {
   const r = parseInt(hexColor.slice(1, 3), 16);
   const g = parseInt(hexColor.slice(3, 5), 16);
@@ -12,10 +8,6 @@ const getContrastTextColor = (hexColor) => {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? '#1A1A1A' : '#FFFFFF';
 };
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
 
 const THEME_TAGS = [
   { name: 'Tech Debt', color: '#C97D60' },
@@ -34,10 +26,6 @@ const ROCK_SIZES = {
   LARGE: 'large',
 };
 
-// ============================================================================
-// DROP INDICATOR
-// ============================================================================
-
 function DropIndicator() {
   return (
     <div style={{
@@ -50,10 +38,6 @@ function DropIndicator() {
   );
 }
 
-// ============================================================================
-// MAIN APP COMPONENT
-// ============================================================================
-
 export default function App() {
   const [columns, setColumns] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -62,20 +46,14 @@ export default function App() {
       if (sharedData) {
         try {
           const decoded = JSON.parse(atob(sharedData));
-          if (!decoded.columns.done) {
-            decoded.columns.done = { title: 'DONE', rocks: [] };
-          }
+          if (!decoded.columns.done) decoded.columns.done = { title: 'DONE', rocks: [] };
           return decoded.columns;
-        } catch (e) {
-          console.error('Failed to load shared data');
-        }
+        } catch (e) { console.error('Failed to load shared data'); }
       }
       const saved = localStorage.getItem('bigRocksData');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (!parsed.done) {
-          parsed.done = { title: 'DONE', rocks: [] };
-        }
+        if (!parsed.done) parsed.done = { title: 'DONE', rocks: [] };
         return parsed;
       }
     }
@@ -122,7 +100,7 @@ export default function App() {
   const [editingRock, setEditingRock] = useState(null);
   const [editingProductName, setEditingProductName] = useState(false);
   const [editingColumnTitle, setEditingColumnTitle] = useState(null);
-  const [editingRockTitle, setEditingRockTitle] = useState(null); // { columnId, rockId }
+  const [editingRockTitle, setEditingRockTitle] = useState(null);
   const [draggedRock, setDraggedRock] = useState(null);
   const [dragOverInfo, setDragOverInfo] = useState(null);
   const [showDone, setShowDone] = useState(false);
@@ -185,9 +163,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && draggedRock) cleanupDragState();
-    };
+    const handleEscape = (e) => { if (e.key === 'Escape' && draggedRock) cleanupDragState(); };
     const handleDragEnd = () => cleanupDragState();
     document.addEventListener('keydown', handleEscape);
     document.addEventListener('dragend', handleDragEnd);
@@ -197,9 +173,7 @@ export default function App() {
     };
   }, [draggedRock]);
 
-  const addCustomTag = (tagName, color) => {
-    setCustomTags(prev => [...prev, { name: tagName, color }]);
-  };
+  const addCustomTag = (tagName, color) => setCustomTags(prev => [...prev, { name: tagName, color }]);
 
   const deleteCustomTag = (tagName) => {
     setCustomTags(prev => prev.filter(t => t.name !== tagName));
@@ -225,8 +199,7 @@ export default function App() {
   };
 
   const copyShareLink = (editable) => {
-    const link = generateShareLink(editable);
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(generateShareLink(editable));
     alert(editable ? 'Editable link copied!' : 'View-only link copied!');
   };
 
@@ -325,7 +298,6 @@ export default function App() {
     };
     delete updatedRock.newlyCreated;
     delete updatedRock.deleting;
-
     const sourceRocks = columns[sourceColumnId].rocks.filter(r => r.id !== rock.id);
     setColumns(prev => ({
       ...prev,
@@ -438,10 +410,8 @@ export default function App() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700;900&family=Inter:wght@900&display=swap');
-
         * { box-sizing: border-box; }
         body { margin: 0; }
-
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
         @keyframes rockAppear { 0% { opacity:0; transform:scale(0.9) translateY(10px) } 60% { transform:scale(1.02) } 100% { opacity:1; transform:scale(1) } }
@@ -449,22 +419,14 @@ export default function App() {
         @keyframes rockComplete { 0% { transform:scale(1) } 30% { transform:scale(1.08) } 100% { transform:scale(1) } }
         @keyframes rockUncomplete { 0% { transform:scale(1); opacity:0.7 } 50% { transform:scale(0.95) } 100% { transform:scale(1); opacity:1 } }
         @keyframes doneContainerPulse { 0%,100% { border-color:#D0D0D0 } 50% { border-color:#27AE60 } }
-
         @keyframes dropPulse { 0%,100% { opacity:0.5 } 50% { opacity:0.9 } }
-
         @keyframes doneZonePulse { 0%,100% { opacity:0.85 } 50% { opacity:1 } }
         @keyframes doneZoneFlash { 0%,100% { border-right-color:#E74C3C } 50% { border-right-color:#ff6b6b } }
-
-        @keyframes descEnter {
-          0%   { opacity: 0; transform: translateY(5px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes descEnter { 0% { opacity: 0; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(0); } }
         .rock { cursor: grab !important; }
         .rock * { cursor: grab !important; }
         .rock button, .rock button * { cursor: pointer !important; }
         .rock-title-input { cursor: text !important; user-select: text !important; }
-
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 3px; }
@@ -474,12 +436,12 @@ export default function App() {
         height: '100vh',
         width: '100vw',
         overflowY: 'auto',
+        overflowX: 'hidden',
         margin: 0,
         padding: 0,
         backgroundColor: '#F0F0F0',
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`,
         fontFamily: '"Work Sans", sans-serif',
-        overflowX: 'hidden',
       }}>
 
         {/* Left-edge DONE zone */}
@@ -512,13 +474,8 @@ export default function App() {
         <div style={{ minHeight: '100%', padding: '24px 24px 80px', boxSizing: 'border-box' }}>
           <div id="export-area" style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
-            {/* View-Only Banner */}
             {isViewOnly && (
-              <div style={{
-                backgroundColor: '#F39C12', color: '#1A1A1A',
-                padding: '12px 24px', marginBottom: '24px',
-                fontSize: '14px', fontWeight: '700', textAlign: 'center',
-              }}>
+              <div style={{ backgroundColor: '#F39C12', color: '#1A1A1A', padding: '12px 24px', marginBottom: '24px', fontSize: '14px', fontWeight: '700', textAlign: 'center' }}>
                 👁️ View-Only Mode - You're viewing a shared roadmap
               </div>
             )}
@@ -692,8 +649,12 @@ export default function App() {
                               <div key={rock.id}>
                                 {dragOverInfo?.columnId === columnId && dragOverInfo.overIndex === index && <DropIndicator />}
                                 <Rock
-                                  rock={rock} columnId={columnId} index={index} allTags={allTags}
-                                  isViewOnly={isViewOnly} isDraggingGlobal={!!draggedRock}
+                                  rock={rock}
+                                  columnId={columnId}
+                                  index={index}
+                                  allTags={allTags}
+                                  isViewOnly={isViewOnly}
+                                  isDraggingGlobal={!!draggedRock}
                                   editingRockTitle={editingRockTitle}
                                   onEdit={() => setEditingRock({ ...rock, columnId })}
                                   onDelete={() => deleteRock(columnId, rock.id)}
@@ -711,6 +672,10 @@ export default function App() {
                                     const targetIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
                                     handleDrop(columnId, targetIndex);
                                   }}
+                                  onStartEditTitle={() => setEditingRockTitle({ columnId, rockId: rock.id })}
+                                  onSaveTitle={(t) => { updateRock(columnId, rock.id, { title: t }); setEditingRockTitle(null); }}
+                                  onCancelEditTitle={() => setEditingRockTitle(null)}
+                                />
                               </div>
                             ))}
                             {dragOverInfo?.columnId === columnId && dragOverInfo.overIndex === column.rocks.length && <DropIndicator />}
@@ -767,8 +732,12 @@ export default function App() {
                               <div key={rock.id}>
                                 {dragOverInfo?.columnId === 'done' && dragOverInfo.overIndex === index && <DropIndicator />}
                                 <Rock
-                                  rock={rock} columnId="done" index={index} allTags={allTags}
-                                  isViewOnly={isViewOnly} isDraggingGlobal={!!draggedRock}
+                                  rock={rock}
+                                  columnId="done"
+                                  index={index}
+                                  allTags={allTags}
+                                  isViewOnly={isViewOnly}
+                                  isDraggingGlobal={!!draggedRock}
                                   editingRockTitle={editingRockTitle}
                                   onEdit={() => setEditingRock({ ...rock, columnId: 'done' })}
                                   onDelete={() => deleteRock('done', rock.id)}
@@ -776,7 +745,9 @@ export default function App() {
                                   onDragStart={() => handleDragStart(rock, 'done', index)}
                                   onDragOver={(e) => { e.stopPropagation(); handleDragOver(e, 'done', index); }}
                                   onDrop={(e) => { e.stopPropagation(); handleDrop('done', index); }}
-                                  onStartEditTitle={() => {}} onSaveTitle={() => {}} onCancelEditTitle={() => setEditingRockTitle(null)}
+                                  onStartEditTitle={() => {}}
+                                  onSaveTitle={() => {}}
+                                  onCancelEditTitle={() => setEditingRockTitle(null)}
                                 />
                               </div>
                             ))}
@@ -806,13 +777,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* Edit Modal */}
         {editingRock && (
           <RockEditModal
-            rock={editingRock} allTags={allTags}
+            rock={editingRock}
+            allTags={allTags}
             onClose={() => setEditingRock(null)}
             onSave={(updates) => { updateRock(editingRock.columnId, editingRock.id, updates); setEditingRock(null); }}
-            onAddCustomTag={addCustomTag} onDeleteCustomTag={deleteCustomTag}
+            onAddCustomTag={addCustomTag}
+            onDeleteCustomTag={deleteCustomTag}
             onDuplicate={() => duplicateRock(editingRock.columnId, editingRock.id)}
           />
         )}
@@ -854,7 +826,6 @@ function Rock({
     }
   }, [isEditingTitle]);
 
-  // Track prev size for description animation key
   const prevDisplaySize = useRef(displaySize);
   const [descAnimKey, setDescAnimKey] = useState(0);
   useEffect(() => {
@@ -916,7 +887,6 @@ function Rock({
         }
       }}
     >
-      {/* Action buttons */}
       {isEditable && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', gap: '4px' }}>
           {[
@@ -924,7 +894,8 @@ function Rock({
             { icon: '✎', title: 'Edit', action: (e) => { e.stopPropagation(); onEdit(); } },
             { icon: '×', title: 'Delete', action: (e) => { e.stopPropagation(); onDelete(); }, danger: true },
           ].map(btn => (
-            <button key={btn.icon} onClick={btn.action} title={btn.title} style={{ width: '24px', height: '24px', backgroundColor: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '2px', cursor: 'pointer', fontSize: '12px' }}
+            <button key={btn.icon} onClick={btn.action} title={btn.title}
+              style={{ width: '24px', height: '24px', backgroundColor: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '2px', cursor: 'pointer', fontSize: '12px' }}
               onMouseEnter={(e) => { e.target.style.backgroundColor = btn.danger ? 'rgba(231,76,60,0.2)' : 'rgba(0,0,0,0.2)'; }}
               onMouseLeave={(e) => { e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'; }}
             >{btn.icon}</button>
@@ -932,7 +903,6 @@ function Rock({
         </div>
       )}
 
-      {/* Title — inline editable */}
       {isEditingTitle ? (
         <input
           ref={titleInputRef}
@@ -961,7 +931,6 @@ function Rock({
         >{rock.title}</h3>
       )}
 
-      {/* Description with enter animation */}
       {rock.description && displaySize !== ROCK_SIZES.SMALL && (
         <p
           key={descAnimKey}
