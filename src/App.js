@@ -318,7 +318,6 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700;900&family=Inter:wght@900&display=swap');
         *{box-sizing:border-box} body{margin:0}
         @keyframes fadeIn    {from{opacity:0}to{opacity:1}}
         @keyframes slideUp   {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -473,28 +472,22 @@ export default function App() {
           </div>
         </div>
 
-        {/* Drag overlay – with font fix */}
+        {/* Drag overlay – no inline font import anymore */}
         <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.25,1,0.5,1)' }}>
           {activeDragRock && (
-            <>
-              <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700;900&family=Inter:wght@900&display=swap');
-                * { box-sizing: border-box; }
-              `}</style>
-              <Rock
-                rock={activeDragRock.rock}
-                columnId="now"
-                overlaySize={activeDragRock.displaySize}
-                allTags={allTags}
-                isViewOnly={true}
-                editingRockTitle={null}
-                isDragOverlay={true}
-                isDraggingParent={false}
-                dragHandleProps={{}}
-                onEdit={() => { }} onDelete={() => { }} onUpdateSize={() => { }}
-                onStartEditTitle={() => { }} onSaveTitle={() => { }} onCancelEditTitle={() => { }}
-              />
-            </>
+            <Rock
+              rock={activeDragRock.rock}
+              columnId="now"
+              overlaySize={activeDragRock.displaySize}
+              allTags={allTags}
+              isViewOnly={true}
+              editingRockTitle={null}
+              isDragOverlay={true}
+              isDraggingParent={false}
+              dragHandleProps={{}}
+              onEdit={() => { }} onDelete={() => { }} onUpdateSize={() => { }}
+              onStartEditTitle={() => { }} onSaveTitle={() => { }} onCancelEditTitle={() => { }}
+            />
           )}
         </DragOverlay>
 
@@ -565,6 +558,9 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
         cursor: isDragOverlay ? 'grabbing' : isEditingTitle ? 'default' : isPressed ? 'grabbing' : 'grab',
         userSelect: isEditingTitle ? 'text' : 'none',
         animation: anim,
+        fontFamily: '"Work Sans", "Helvetica Neue", Arial, Helvetica, sans-serif', // fallback added
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
       }}
     >
       {isEditable && (
@@ -591,25 +587,25 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
             style={{ fontSize: '18px', fontWeight: '900', fontFamily: '"Work Sans",sans-serif', border: '2px solid #1A1A1A', borderRadius: '2px', backgroundColor: 'white', padding: '4px 8px', marginBottom: '8px', color: '#1A1A1A', width: 'calc(100% - 88px)', boxSizing: 'border-box', outline: 'none', boxShadow: '0 0 0 3px rgba(231,76,60,0.2)', position: 'relative', zIndex: 2 }}
           />
         : <h3 onClick={e => { if (isEditable) { e.stopPropagation(); onStartEditTitle(); } }}
-            style={{ fontSize: '18px', fontWeight: '900', margin: '0 0 8px', color: '#1A1A1A', wordBreak: 'break-word', paddingRight: isEditable ? '80px' : '0', cursor: isEditable ? 'text' : 'default', position: 'relative', zIndex: 2 }}
+            style={{ fontSize: '18px', fontWeight: '900', margin: '0 0 8px', color: '#1A1A1A', wordBreak: 'break-word', paddingRight: isEditable ? '80px' : '0', cursor: isEditable ? 'text' : 'default', position: 'relative', zIndex: 2, fontFamily: '"Work Sans",sans-serif' }}
           >{rock.title}</h3>
       }
 
       {rock.description && displaySize !== SZ.SMALL && (
-        <p key={descKey} style={{ fontSize: '13px', lineHeight: '1.6', margin: '0 0 auto', color: 'rgba(26,26,26,0.92)', fontWeight: '500', animation: 'descEnter 0.32s ease forwards', position: 'relative', zIndex: 2 }}>{rock.description}</p>
+        <p key={descKey} style={{ fontSize: '13px', lineHeight: '1.6', margin: '0 0 auto', color: 'rgba(26,26,26,0.92)', fontWeight: '500', animation: 'descEnter 0.32s ease forwards', position: 'relative', zIndex: 2, fontFamily: '"Work Sans",sans-serif' }}>{rock.description}</p>
       )}
 
       {rock.date && (
-        <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(26,26,26,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: displaySize === SZ.SMALL ? 'auto' : '8px', position: 'relative', zIndex: 2 }}>{rock.date}</div>
+        <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(26,26,26,0.6)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: displaySize === SZ.SMALL ? 'auto' : '8px', position: 'relative', zIndex: 2, fontFamily: '"Work Sans",sans-serif' }}>{rock.date}</div>
       )}
 
       {isDone && rock.completedDate && (
-        <div style={{ fontSize: '11px', fontWeight: '700', color: '#1E8449', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', position: 'relative', zIndex: 2 }}>✓ {rock.completedDate}</div>
+        <div style={{ fontSize: '11px', fontWeight: '700', color: '#1E8449', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', position: 'relative', zIndex: 2, fontFamily: '"Work Sans",sans-serif' }}>✓ {rock.completedDate}</div>
       )}
 
       {rock.tags?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px', position: 'relative', zIndex: 2 }}>
-          {rock.tags.map(name => { const t = allTags.find(x => x.name === name); return t ? <span key={name} style={{ backgroundColor: t.color, color: getContrast(t.color), fontSize: '11px', fontWeight: '700', padding: '6px 12px', borderRadius: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.name}</span> : null; })}
+          {rock.tags.map(name => { const t = allTags.find(x => x.name === name); return t ? <span key={name} style={{ backgroundColor: t.color, color: getContrast(t.color), fontSize: '11px', fontWeight: '700', padding: '6px 12px', borderRadius: '2px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: '"Work Sans",sans-serif' }}>{t.name}</span> : null; })}
         </div>
       )}
     </div>
@@ -632,16 +628,9 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '24px', animation: 'fadeIn 0.2s ease-out' }}>
-      
-      {/* Font fix for modal */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700;900&family=Inter:wght@900&display=swap');
-        * { box-sizing: border-box; }
-      `}</style>
-
       <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#F0F0F0', border: '2px solid #1A1A1A', padding: '32px', maxWidth: '600px', width: '100%', maxHeight: '80vh', overflow: 'auto', animation: 'slideUp 0.3s ease-out' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: '#1A1A1A' }}>Edit Rock</h3>
+          <h3 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: '#1A1A1A', fontFamily: '"Work Sans",sans-serif' }}>Edit Rock</h3>
           <button onClick={() => { onDuplicate(); onClose(); }} style={BTN}>Duplicate</button>
         </div>
 
@@ -651,7 +640,7 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
           { label: 'Date (Optional)',key: 'date',        type: 'input',    inputType: 'text',   fs: '14px', placeholder: 'Q2 2025' },
         ].map(f => (
           <div key={f.key} style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', color: '#1A1A1A' }}>{f.label}</label>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', color: '#1A1A1A', fontFamily: '"Work Sans",sans-serif' }}>{f.label}</label>
             {f.type === 'textarea'
               ? <textarea value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} rows={f.rows} style={{ width: '100%', padding: '12px', fontSize: f.fs, border: '2px solid #1A1A1A', fontFamily: '"Work Sans",sans-serif', resize: 'vertical', boxSizing: 'border-box' }} />
               : <input type={f.inputType} value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} style={{ width: '100%', padding: '12px', fontSize: f.fs, border: '2px solid #1A1A1A', fontFamily: '"Work Sans",sans-serif', boxSizing: 'border-box' }} />
@@ -660,7 +649,7 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
         ))}
 
         <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', color: '#1A1A1A' }}>Tags (select multiple)</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', color: '#1A1A1A', fontFamily: '"Work Sans",sans-serif' }}>Tags (select multiple)</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '8px', marginBottom: '16px' }}>
             {allTags.map(tag => {
               const sel = form.tags.includes(tag.name), isTheme = THEME_TAGS.some(t => t.name === tag.name);
@@ -674,14 +663,14 @@ function RockEditModal({ rock, allTags, onClose, onSave, onAddCustomTag, onDelet
                   {tag.name}
                   {!isTheme && (
                     <span onClick={e => { e.stopPropagation(); onDeleteCustomTag(tag.name); setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag.name) })); }}
-                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '20px', height: '20px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer' }}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '20px', height: '20px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer', fontFamily: '"Work Sans",sans-serif' }}
                     >×</span>
                   )}
                 </button>
               );
             })}
           </div>
-          <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px', color: '#1A1A1A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Create New Tag</div>
+          <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px', color: '#1A1A1A', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: '"Work Sans",sans-serif' }}>Create New Tag</div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <input type="text" placeholder="Tag name" value={newTagName} onChange={e => setNewTagName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} style={{ flex: 1, padding: '12px', fontSize: '14px', border: '2px solid #1A1A1A', fontFamily: '"Work Sans",sans-serif' }} />
             <input type="color" value={newTagColor} onChange={e => setNewTagColor(e.target.value)} style={{ width: '48px', height: '48px', border: '2px solid #1A1A1A', cursor: 'pointer', padding: '2px' }} />
