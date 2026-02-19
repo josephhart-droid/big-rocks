@@ -662,13 +662,15 @@ export default function App() {
                                   onDragStart={() => handleDragStart(rock, columnId, index)}
                                   onDragOver={(e) => {
                                     e.stopPropagation();
-                                    const rect = e.currentTarget.getBoundingClientRect();
+                                          const el = e.currentTarget.closest('.rock') || e.currentTarget;
+                                          const rect = el.getBoundingClientRect();
                                     const targetIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
                                     handleDragOver(e, columnId, targetIndex);
                                   }}
                                   onDrop={(e) => {
                                     e.stopPropagation();
-                                    const rect = e.currentTarget.getBoundingClientRect();
+                                           const el = e.currentTarget.closest('.rock') || e.currentTarget;
+                                          const rect = el.getBoundingClientRect();
                                     const targetIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
                                     handleDrop(columnId, targetIndex);
                                   }}
