@@ -114,7 +114,7 @@ function SortableRock({ rock, columnId, allTags, isViewOnly, editingRockTitle, o
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} data-id={rock.id} style={style}>
       <Rock
         rock={rock}
         columnId={columnId}
@@ -214,9 +214,11 @@ export default function App() {
   // so we still have it even after columns state changes during drag
   const activeDragRockRef = useRef(null);
   const [activeDragRock, setActiveDragRock] = useState(null);
+  const [dragWidth, setDragWidth] = useState(null);
   const [overId, setOverId] = useState(null);
 
   const shareMenuRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -258,6 +260,9 @@ export default function App() {
     const info = { rock, columnId: colId };
     activeDragRockRef.current = info;
     setActiveDragRock(info);
+    // Capture element width so overlay matches exactly
+    const el = document.querySelector(`[data-id="${active.id}"]`);
+    if (el) setDragWidth(el.offsetWidth);
   };
 
   const handleDragOver = ({ active, over }) => {
@@ -293,6 +298,7 @@ export default function App() {
     const startInfo = activeDragRockRef.current;
     activeDragRockRef.current = null;
     setActiveDragRock(null);
+    setDragWidth(null);
     setOverId(null);
 
     if (!over) return;
@@ -317,10 +323,10 @@ export default function App() {
         done: { ...prev.done, rocks: [...prev.done.rocks, completedRock] },
       }));
       // Open done section without scrolling — lock scroll position then restore
-      const scrollEl = document.documentElement.scrollTop > 0 ? document.documentElement : document.body;
-      const scrollY = scrollEl.scrollTop;
+      const scrollEl = scrollContainerRef.current;
+      const scrollY = scrollEl ? scrollEl.scrollTop : 0;
       setShowDone(true);
-      requestAnimationFrame(() => { scrollEl.scrollTop = scrollY; });
+      requestAnimationFrame(() => { if (scrollEl) scrollEl.scrollTop = scrollY; });
       setDoneContainerCelebrating(true);
       setTimeout(() => setDoneContainerCelebrating(false), 600);
       setTimeout(() => {
@@ -363,10 +369,10 @@ export default function App() {
           ),
         },
       }));
-      const scrollEl2 = document.documentElement.scrollTop > 0 ? document.documentElement : document.body;
-      const scrollY2 = scrollEl2.scrollTop;
+      const scrollEl2 = scrollContainerRef.current;
+      const scrollY2 = scrollEl2 ? scrollEl2.scrollTop : 0;
       setShowDone(true);
-      requestAnimationFrame(() => { scrollEl2.scrollTop = scrollY2; });
+      requestAnimationFrame(() => { if (scrollEl2) scrollEl2.scrollTop = scrollY2; });
       setDoneContainerCelebrating(true);
       setTimeout(() => setDoneContainerCelebrating(false), 600);
       setTimeout(() => {
@@ -379,27 +385,26 @@ export default function App() {
     }
 
     // ── Restore from done back to a live column ──────────────────────────────
-    if (activeColId === 'done' && overColId !== 'done') {
+    // Use startInfo.columnId — by dragEnd, handleDragOver has already moved
+    // the rock out of done, so activeColId is the live col, not 'done'
+    if (startInfo && startInfo.columnId === 'done' && activeColId !== 'done') {
+      // Rock already lives in activeColId thanks to handleDragOver cross-column logic
+      // Just strip completedDate and mark as uncompleted
       setColumns(prev => {
-        const sourceRock = prev.done.rocks.find(r => r.id === active.id);
-        if (!sourceRock) return prev;
-        const restoredRock = { ...sourceRock, justUncompleted: true, size: sourceRock.size || ROCK_SIZES.MEDIUM };
-        delete restoredRock.completedDate;
-        const doneRocks = prev.done.rocks.filter(r => r.id !== active.id);
-        const targetRocks = [...prev[overColId].rocks];
-        const overIndex = targetRocks.findIndex(r => r.id === over.id);
-        const insertAt = overIndex >= 0 ? overIndex : targetRocks.length;
-        targetRocks.splice(insertAt, 0, restoredRock);
-        return {
-          ...prev,
-          done: { ...prev.done, rocks: doneRocks },
-          [overColId]: { ...prev[overColId], rocks: targetRocks },
-        };
+        const targetRocks = prev[activeColId].rocks.map(r => {
+          if (r.id === active.id) {
+            const restored = { ...r, justUncompleted: true, size: r.size || ROCK_SIZES.MEDIUM };
+            delete restored.completedDate;
+            return restored;
+          }
+          return r;
+        });
+        return { ...prev, [activeColId]: { ...prev[activeColId], rocks: targetRocks } };
       });
       setTimeout(() => {
         setColumns(prev => ({
           ...prev,
-          [overColId]: { ...prev[overColId], rocks: prev[overColId].rocks.map(r => r.id === active.id ? { ...r, justUncompleted: false } : r) },
+          [activeColId]: { ...prev[activeColId], rocks: prev[activeColId].rocks.map(r => r.id === active.id ? { ...r, justUncompleted: false } : r) },
         }));
       }, 600);
       return;
@@ -517,7 +522,7 @@ export default function App() {
         {/* Left-edge DONE zone — only shown when dragging a live (non-done) rock */}
         {isDraggingFromLive && !isViewOnly && <DoneZoneStrip />}
 
-        <div style={{ height: '100vh', width: '100vw', overflowY: 'auto', overflowX: 'hidden', margin: 0, padding: 0, backgroundColor: '#F0F0F0', backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`, fontFamily: '"Work Sans", sans-serif' }}>
+        <div ref={scrollContainerRef} style={{ height: '100vh', width: '100vw', overflowY: 'auto', overflowX: 'hidden', margin: 0, padding: 0, backgroundColor: '#F0F0F0', backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E")`, fontFamily: '"Work Sans", sans-serif' }}>
 
           <div style={{ minHeight: '100%', padding: '24px 24px 80px', boxSizing: 'border-box' }}>
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -690,6 +695,7 @@ export default function App() {
         {/* Drag Overlay — floating ghost while dragging */}
         <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' }}>
           {activeDragRock ? (
+            <div style={{ width: dragWidth ? `${dragWidth}px` : undefined }}>
             <Rock
               rock={activeDragRock.rock}
               columnId="now"
@@ -702,6 +708,7 @@ export default function App() {
               onEdit={() => {}} onDelete={() => {}} onUpdateSize={() => {}}
               onStartEditTitle={() => {}} onSaveTitle={() => {}} onCancelEditTitle={() => {}}
             />
+            </div>
           ) : null}
         </DragOverlay>
 
