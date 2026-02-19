@@ -739,8 +739,19 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
     if (prevDisplaySize.current !== displaySize) { prevDisplaySize.current = displaySize; setDescAnimKey(k => k + 1); }
   }, [displaySize]);
 
+  const activeDragProps = (!isViewOnly && !isDone && !isEditingTitle) ? {
+    ...dragHandleProps,
+    onPointerDown: (e) => {
+      setIsPressed(true);
+      if (dragHandleProps && dragHandleProps.onPointerDown) dragHandleProps.onPointerDown(e);
+    },
+    onPointerUp: () => setIsPressed(false),
+    onPointerCancel: () => setIsPressed(false),
+  } : {};
+
   return (
     <div
+      {...activeDragProps}
       style={{
         ...sizeStyles[displaySize],
         backgroundColor: '#FFFFFF',
@@ -764,16 +775,6 @@ function Rock({ rock, columnId, allTags, isViewOnly, editingRockTitle, isDragOve
         animation: rock.deleting ? 'rockDelete 0.3s cubic-bezier(0.4,0,0.2,1) forwards' : rock.justCompleted ? 'rockComplete 0.6s cubic-bezier(0.34,1.56,0.64,1)' : rock.justUncompleted ? 'rockUncomplete 0.6s cubic-bezier(0.4,0,0.2,1)' : rock.newlyCreated ? 'rockAppear 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
       }}
     >
-      {/* Drag handle — covers whole card, gives press feedback */}
-      {!isViewOnly && !isDone && !isEditingTitle && (
-        <div
-          {...dragHandleProps}
-          onPointerDown={() => setIsPressed(true)}
-          onPointerUp={() => setIsPressed(false)}
-          onPointerCancel={() => setIsPressed(false)}
-          style={{ position: 'absolute', inset: 0, cursor: isPressed ? 'grabbing' : 'grab', zIndex: 0 }}
-        />
-      )}
 
       {/* Action buttons */}
       {isEditable && (
